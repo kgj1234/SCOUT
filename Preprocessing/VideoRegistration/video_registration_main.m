@@ -36,7 +36,7 @@ vid_paths=dir;
 vid_paths={vid_paths.name};
 for i=1:length(vid_paths)
     [~,name,ext]=fileparts(vid_paths{i});
-    if (~isequal(ext,'.mat') && ~isequal(ext,'.avi'))||isequal(name,'.dir')||isequal(name,'dir')
+    if (~isequal(ext,'.mat') && ~isequal(ext,'.avi'))||isequal(name,'.dir')||isequal(ext,'.m')
         del_ind(i)=1;
     end
 end
@@ -86,11 +86,14 @@ end
 if length(projections)==0
     if isequal(projection_type,'max')
         for i=1:length(vid_paths)
+            
             [Ydt, X, R] = detrend_data(reshape(double(vids{i}),[],size(vids{i},3)),4);
             Ydt=reshape(Ydt,size(vids{i},1),size(vids{i},2),[]);
             projections{i}=max(Ydt,[],3);
+           
         end
     else
+        
         projections=construct_correlation_template_main();
     end
 end

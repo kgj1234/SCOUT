@@ -4,13 +4,19 @@ vid_files=dir;
 vid_files={vid_files.name};
 vids={};
 for i=1:length(vid_files)
-    if isfile(vid_files{i})&&~isequal(vid_files{i},'.dir.mat')
-        vids{end+1}=vid_files{i};
+    [~,name,ext]=fileparts(vid_files{i});
+    if (~isequal(ext,'.mat') && ~isequal(ext,'.avi'))||isequal(name,'.dir')||isequal(ext,'.m')
+        del_ind(i)=1;
     end
 end
-vids_lower=lower(vids);
-[~,ind]=sort(vids_lower);
+del_ind=find(del_ind);
+vids_lower=lower(vid_files);
+
+vids=vids_lower;
+vids(del_ind)=[];
+[~,ind]=sort(vids);
 vids=vids(ind);
+
 for i=1:length(vids)
     
     templates{i}=construct_correlation_template(['./',vids{i}],[],20,12,'prc',12);
