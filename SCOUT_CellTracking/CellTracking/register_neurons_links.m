@@ -77,7 +77,7 @@ else
         end
         
          [neurons{i},mse]=register_neurons_ind(neurons{i},template_prev,template_prev_norm,template_curr,template_curr_norm,normalize,registration_method);
-        if mse<reg_thresh
+        if mse>reg_thresh
             warning('Registration Failed')
         end
        total=total+1;

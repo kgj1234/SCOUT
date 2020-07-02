@@ -22,14 +22,14 @@ Currently, SCOUT requires a specific format for recordings. Recordings must be s
 ## Output
 Output of both cell extraction and cell tracking is in the form of the Sources2D (CNMF for 2p) class. The following fields are of primary importance
 
-C: Neural temporal signal
-S: Neural spike events
-A: Neuron spatial footprints
+C: Neural temporal signal  
+S: Neural spike events  
+A: Neuron spatial footprints  
 
 With additional fields for cell tracking
 
-probabilities: Neuron identification probabilities
-cell_register: Matrix of cell identifications across session
+probabilities: Neuron identification probabilities  
+cell_register: Matrix of cell identifications across session  
 A_per_session: spatial footprints of detected neurons in each session
 
 

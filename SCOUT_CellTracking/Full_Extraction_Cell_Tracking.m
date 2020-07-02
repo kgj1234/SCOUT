@@ -212,7 +212,7 @@ save('links','links','-v7.3')
 if isequal(data_type,'1p')
 for i=1:length(links)
     links{i}.MergeNeighbors([2,15]);
-    links{i}.remove_false_positive(false,true);
+    links{i}.remove_false_positives(false,true);
 end
 end
 
