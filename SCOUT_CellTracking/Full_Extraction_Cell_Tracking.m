@@ -63,7 +63,11 @@ end
 if ~exist('final_index','var')
     error('Unable to find SCOUT on filepath. Ensure function is in SCOUT directory tree')
 else
-    scoutpath=filesep;
+    if ~ispc
+        scoutpath=filesep;
+    else
+        scoutpath='';
+    end
     for i=1:final_index
     	scoutpath=fullfile(scoutpath,endout{i});
     end

@@ -7,7 +7,8 @@ function BatchEndoscopeWrapper(base_dir,vids_per_batch,overlap_per_batch,data_ty
     % video size)
 %vids_per_batch: (int) Number of videos to extract in each batch, set to 1
     % and overlap_per_batch to 0 for standard cell tracking
-%overlap_per_batch: (int, <vids_per_batch unles vids_per_batch=1) Number of video overlaps between batches
+%overlap_per_batch: (int, between 1 and vids_per_batch unles vids_per_batch=1) Number of video overlaps between batches
+    
 
 %data_type (str) '1p' or '2p'
 % extraction_options (struct) see options in full_demo_endoscope (1p) or

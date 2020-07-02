@@ -1,13 +1,19 @@
-function Y=runrigid2(file,save)
+function Y=runrigid2(file,conv_uint8,save_file)
 % demo file for applying the NoRMCorre motion correction algorithm on 
 % 1-photon widefield imaging data
 % Example files can be obtained through the miniscope project page
 % www.miniscope.org
 
-if ~exist('save','var')||isempty(save)
-    save=true;
-end
+%file (3 dimensional matrix variable or filename of .mat recording)
+%conv_uint8 (bool) convert final result to uint8
+%save_file (bool) save resulting files
 
+if ~exist('save','var')||isempty(save_file)
+    save_file=true;
+end
+if ~exist('conv_uint8','var')||isempty(conv_uint8);
+    conv_uint8=true;
+end
 gcp;
 
 %addpath(genpath('../../NoRMCorre'));
@@ -78,10 +84,12 @@ tic; [M1,shifts1,template1] = normcorre_batch(Y(bound/2+1:end-bound/2,bound/2+1:
     % exclude boundaries due to high pass filtering effects
 tic; Mr = apply_shifts(Yf,shifts1,options_r,bound/2,bound/2); toc % apply shifts to full dataset
     % apply shifts on the whole movie
-%% save video as .avi file
-Y=uint8(Mr);
+%% save video as .mat file
+if conv_uint8
+    Y=uint8(Mr);
+end
 Ysiz=size(Y);
-if save
+if save_file
 mkdir motion_corrected
 [path,name,ext]=fileparts(file);
 if ~isempty(path)

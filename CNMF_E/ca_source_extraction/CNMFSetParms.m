@@ -117,6 +117,7 @@ Names = [
     'spatial_algorithm  ' % method for updating spatial components 
     'with_overlap_init  ' % initialize repeat neurons across different patch 
     'save_intermediate  ' % save intermediate results or not 
+  
     ];
 
 [m,n] = size(Names);

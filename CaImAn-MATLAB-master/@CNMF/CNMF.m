@@ -87,9 +87,9 @@ classdef CNMF < handle
             % Instantiate new object of the same class.
             obj_new = feval(class(obj));
             % Copy all non-hidden properties.
-            p = properties(obj);
-            for i = 1:length(p)
-                obj_new.(p{i}) = obj.(p{i});
+            p1 = properties(obj);
+            for i = 1:length(p1)
+                obj_new.(p1{i}) = obj.(p1{i});
             end
         end
         function updateCentroid(obj)
