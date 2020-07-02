@@ -1,0 +1,79 @@
+function neuron=apply_to_full(i,spatial_downsample,temporal_downsample)
+disp(strcat('./batch',num2str(i),'.mat'))
+load(strcat('./batch',num2str(i),'.mat'))
+disp('loaded')
+%% apply results to the full resolution
+%These can be adjusted. ssub appears to be an actual function.
+tsub=temporal_downsample;
+ssub=spatial_downsampel;
+if or(ssub>1, tsub>1)
+    neuron_ds = neuron.copy();  % save the result
+    neuron = neuron_full.copy();
+    cnmfe_full;
+    neuron_full = neuron.copy();
+end
+%
+%% delete some neurons and run CNMF-E iteration 
+neuron.orderROIs('decay_time');  % you can also use {'snr', 'mean', 'decay_time'} 
+
+tic;
+cnmfe_update_BG;
+fprintf('Time cost in estimating the background:        %.2f seconds\n', toc);
+%update spatial & temporal components
+tic;
+for m=1
+    %temporal
+    neuron.updateTemporal_endoscope(Ysignal);
+    cnmfe_quick_merge;              % run neuron merges
+
+    %spatial
+    neuron.updateSpatial_endoscope(Ysignal, Nspatial, update_spatial_method);
+    neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
+    neuron.compactSpatial(); 
+    cnmfe_merge_neighbors; 
+end
+fprintf('Time cost in updating spatial & temporal components:     %.2f seconds\n', toc);
+
+b0 = mean(Y,2)-neuron.A*mean(neuron.C,2); 
+Ybg = bsxfun(@plus, Ybg, b0-mean(Ybg, 2)); 
+neuron.orderROIs('snr'); 
+%
+%% display contours of the neurons
+%{
+figure;
+Cnn = correlation_image(neuron.reshape(Ysignal(:, 1:5:end), 2), 4);
+[neuron.Coor,json_file] = plot_contours(neuron.A, Cnn, 0.8, 1, [], [], 2);
+colormap winter;
+axis equal; axis off;
+title('contours of estimated neurons');
+savejson('jmesh',json_file,'contoursJson7thGsig8Ds2');
+%}
+
+
+% plot contours with IDs
+% [Cn, pnr] = neuron.correlation_pnr(Y(:, round(linspace(1, T, min(T, 1000)))));
+figure;
+Cn = imresize(Cn, [d1, d2]);
+[neuron.Coor,json_file,centroid] = plot_contours(neuron.A, Cn, 0.8, 1, [], [], 2);
+% plot_contours(neuron.A, Cn, 0.8, 0, [], [], 2); % display no numbers
+colormap winter;
+title('contours of estimated neurons');
+%%savejson('jmesh',json_file,'contoursJason8thGsig8Ds3manual2Auto'); %%Suoqin added this to save the image
+
+figure
+imagesc(Cn,[min(Cn(:)) max(Cn(:))])
+% hold on
+% scatter(centroid(:,2),centroid(:,1),'r')
+axis tight; axis equal;axis off
+colormap winter;
+
+neuron.file = neuron;
+neuron.numFrame = numFrame;
+neuron.num2read = num2read;
+neuron.centroid = centroid;
+neuron.trace = neuron.C.*(max(neuron.A)'*ones(1,size(neuron.C,2)));
+neuron.Cn = Cn;
+[C_df,C_raw_df, Df] = extract_DF_F_endoscope(neuron,Ybg);
+neuron.C_df = C_df;neuron.Df = Df;
+close all
+end

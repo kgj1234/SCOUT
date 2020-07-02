@@ -1,0 +1,42 @@
+
+function [aligned_neurons,aligned_probabilities,rem_ind]=...
+    Remove_Repeats(aligned_neurons,aligned_probabilities,size_vec,use_spat,probabilities,pair_aligned,spat_aligned,min_prob)
+
+%Calls functions to remove repeated neurons from neuron chains, t
+
+
+if ~exist('use_spat','var')||isempty(use_spat)
+    use_spat=false;
+end
+if ~exist('probabilities','var')||isempty(use_spat)
+    probabilities=[];
+end
+if ~exist('pair_aligned','var')||isempty(use_spat)
+    pair_aligned=[];
+end
+if ~exist('spat_aligned','var')||isempty(use_spat)
+    spat_aligned=[];
+end
+if ~exist('min_prob','var')||isempty(use_spat)
+    min_prob=.5;
+end
+
+
+
+if size(aligned_probabilities,2)>1
+    rem_ind=Eliminate_Repeats(aligned_neurons,aligned_probabilities);
+    aligned_neurons(rem_ind,:)=[];
+    aligned_probabilities(rem_ind,:)=[];
+else
+    [aligned_neurons,aligned_probabilities]=Eliminate_Repeats_Fill(aligned_neurons,aligned_probabilities,use_spat,probabilities,pair_aligned,spat_aligned,min_prob);
+    rem_ind=[];
+end
+
+
+for i=1:size(aligned_neurons,2)
+    
+    ind=setdiff(1:size_vec(i),unique(aligned_neurons(:,i)));
+    aligned_neurons(end+1:end+length(ind),i)=ind;
+end
+aligned_neurons(aligned_neurons==0)=0;
+aligned_probabilities=[aligned_probabilities;zeros(size(aligned_neurons,1)-size(aligned_probabilities,1),1)];

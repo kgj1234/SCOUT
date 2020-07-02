@@ -1,0 +1,20 @@
+function probability=compute_gmm_probability(x,w,mu,sigma,min_x,max_x)
+
+f= @(x) (w(1)*normpdf(x,mu(1),sigma(1)))./(w(1)*normpdf(x,mu(1),sigma(1))+w(2)*normpdf(x,mu(2),sigma(2)));
+y=min_:.01:max;
+[minim,I1]=min(f(y));
+[maxim,I2]=max(f(y));
+for i=1:length(x)
+    if x(i)<I1
+        probability(i)=maxim;
+    elseif x(i)>I2
+        probability(i)=minim;
+    else
+        probability(i)=f(x(i));
+    end
+end
+probability=(probability-maxim)/(maxim-minim);
+for i=1:length(x)
+    probability(i)=min(probability(i),1);
+    probability(i)=max(probability(i),0);
+end

@@ -1,0 +1,27 @@
+1. Start by concatenating together all of the aligned video files.
+
+Crop regions of the video files affected by alignment.
+
+
+If vid_files contains the names of the video files
+
+Y1=[];
+for i=1:length(vid_files)
+	load(vid_files{i})
+	%Y is the variable contained in the variable
+	Y1=cat(3,Y1,uint8(Y(h_low,h_high,w_low,w_high,:);
+end
+Y=Y1;
+Ysiz=size(Y);
+save('full_video','Y','Ysiz','-v7.3')
+
+
+2. Run either full_demo_endoscope, or autoNeuronExtraction full_demo_endoscope outputs a neuron representing the extraction. autoNeuronExtraction saves extractions using several different parameters, and outputs a combined extraction.
+
+
+
+
+
+
+
+

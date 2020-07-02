@@ -1,0 +1,194 @@
+function correlations=CNMFE_correlations(neuron1,neuron2,support_thresholds,max_dist,minimal_support)
+if ~exist('minimal_support','var')||isempty(minimal_support)
+    minimal_support=false;
+    
+end
+
+if ~minimal_support
+for i=1:size(neuron1.C,1)
+    thresh_val=max(neuron1.C(i,:))*support_thresholds(1);
+    neuron1.C(i,neuron1.C(i,:)<thresh_val)=0;
+end
+
+for i=1:size(neuron2.C,1)
+    thresh_val=max(neuron2.C(i,:))*support_thresholds(1);
+    neuron2.C(i,neuron2.C(i,:)<thresh_val)=0;
+end
+end
+
+%Construct Correlations of all types, return max correlation
+%cut off at thresholds as determined by user
+
+if isempty(neuron1.centroid)||size(neuron1.centroid,1)~=size(neuron1.C,1)
+    neuron1.updateCentroid();
+    neuron2.updateCentroid();
+end
+
+parfor i=1:size(neuron1.C,1)
+    C1{i}=neuron1.C(i,:);
+    if ~minimal_support
+        C1{i}(C1{i}<support_thresholds(1)*max(C1{i}))=0;
+    end
+    C1_back{i}=zeros(size(C1{i}));
+    
+    kernel_pars{i}=neuron1.P.kernel_pars(i,:);
+end
+n=length(C1);
+indices_1a=cell(1,n);
+indices_1b=cell(1,n);
+for i=1:n
+    curr_C_initial=zeros(1,length(C1{i}));
+    curr_back_C_initial=zeros(1,length(C1{i}));
+    temp=ar2exp(kernel_pars{i});
+    temp=temp(1);
+    [~,ind]=findpeaks(C1{i});
+    lengths=length(C1{i});
+    
+    
+    x=1:lengths;
+    final=find(exp(-1/temp*x)<min(support_thresholds),1);
+    if ~isempty(final)
+        final=lengths;
+    end
+    
+    
+    vals=exp(-1/temp*x);
+    vals=vals(1:final);
+    vals1=vals(end:-1:1);
+    for k=1:length(ind)
+        curr_C_initial(ind(k):ind(k)+min(length(curr_C_initial)-ind(k)+1,length(vals))-1)=curr_C_initial(ind(k):ind(k)+min(length(curr_C_initial)-ind(k)+1,length(vals))-1)+vals(1:min(length(vals),length(curr_C_initial)-ind(k)+1));
+        curr_back_C_initial(ind(k)-min(ind(k),length(vals1))+1:ind(k))=curr_back_C_initial(ind(k)-min(ind(k),length(vals1))+1:ind(k))+vals1(end-min(ind(k),length(vals1))+1:end);
+    end
+    C1{i}=curr_C_initial;
+    C1_back{i}=curr_back_C_initial;
+    
+    curr_indices_1a=cell(1,length(support_thresholds));
+    curr_indices_1b=cell(1,length(support_thresholds));
+    for j=1:length(support_thresholds)
+        avail_ind=1:length(curr_C_initial);
+        %indices1=C1{i}>=thresholds(j)|C1_back{i}>=thresholds(j);
+        indices1=C1{i}>=support_thresholds(j);
+        outliers=isoutlier(avail_ind(indices1));
+        indices1(outliers)=0;
+        range=min(find(indices1)):max(find(indices1));
+        indices1(range)=1;
+        curr_indices_1a{j}=indices1;
+    end
+    indices_1a{i}=curr_indices_1a;
+    for j=1:length(support_thresholds)
+        
+        
+        %curr_indices_1b{j}=C1{i}>=thresholds(j)|C1_back{i}>=thresholds(j);
+        curr_indices_1b{j}=C1{i}>=support_thresholds(j);
+    end
+    indices_1b{i}=curr_indices_1b;
+end
+
+for i=1:size(neuron2.C,1)
+    C2{i}=neuron2.C(i,:);
+    if ~minimal_support
+        C2{i}(C2{i}<support_thresholds(1)*max(C2{i}))=0;
+    end
+    C2_back{i}=zeros(size(neuron2.C(i,:)));
+    kernel_pars{i}=neuron2.P.kernel_pars(i,:);
+end
+n=length(C2);
+indices_2a=cell(1,n);
+indices_2b=cell(1,n);
+parfor i=1:n
+    curr_C_initial=zeros(1,length(C2{i}));
+    curr_back_C_initial=zeros(1,length(C2{i}));
+    
+    temp=ar2exp(kernel_pars{i});
+    temp=temp(1);
+    [~,ind]=findpeaks(C2{i});
+    lengths=length(C2{i});
+    x=1:lengths;
+    
+    
+    final=find(exp(-1/temp*x)<min(support_thresholds),1);
+    if ~isempty(final)
+        final=lengths;
+    end
+    vals=exp(-1/temp*x);
+    vals=vals(1:final);
+    vals1=vals(end:-1:1);
+    for k=1:length(ind)
+        curr_C_initial(ind(k):ind(k)+min(length(curr_C_initial)-ind(k)+1,length(vals))-1)=curr_C_initial(ind(k):ind(k)+min(length(curr_C_initial)-ind(k)+1,length(vals))-1)+vals(1:min(length(vals),length(curr_C_initial)-ind(k)+1));
+        curr_back_C_initial(ind(k)-min(ind(k),length(vals1))+1:ind(k))=curr_back_C_initial(ind(k)-min(ind(k),length(vals1))+1:ind(k))+vals1(end-min(ind(k),length(vals1))+1:end);
+    end
+    C2{i}=curr_C_initial;
+    C2_back{i}=curr_back_C_initial;
+    
+    curr_indices_2a=cell(1,length(support_thresholds));
+    curr_indices_2b=cell(1,length(support_thresholds));
+    for j=1:length(support_thresholds)
+        avail_ind=1:length(C2{i});
+        %indices2=C2{i}>=thresholds(j)|C2_back{i}>=thresholds(j);
+        indices2=C2{i}>=support_thresholds(j);
+        outliers=isoutlier(avail_ind(indices2));
+        indices2(outliers)=0;
+        range=min(find(indices2)):max(find(indices2));
+        indices2(range)=1;
+        curr_indices_2a{j}=indices2;
+    end
+    indices_2a{i}=curr_indices_2a;
+    for j=1:length(support_thresholds)
+        
+        
+        %curr_indices_2b{j}=C2{i}>=thresholds(j)|C2_back{i}>=thresholds(j);
+        curr_indices_2b{j}=C2{i}>=support_thresholds(j);
+    end
+    indices_2b{i}=curr_indices_2b;
+end
+
+
+correlations=zeros(size(C1,1),size(C2,1));
+
+C1=vertcat(C1{:});
+C2=vertcat(C2{:});
+
+temp1=ar2exp(neuron1.P.kernel_pars(1,:));
+temp2=ar2exp(neuron2.P.kernel_pars(1,:));
+
+distances=pdist2(neuron1.centroid,neuron2.centroid);
+parfor k=1:size(C1,1)*size(C2,1)
+    
+    [i,j]=ind2sub([size(C1,1),size(C2,1)],k);
+    
+    if distances(i,j)<max_dist
+        if minimal_support
+            corrs=zeros(1,15);
+            for l=1:length(support_thresholds)
+                
+                
+                indices=find(indices_1a{i}{l}&indices_2a{j}{l});
+                
+                
+                if length(indices)>0
+                    corrs(l)=max([corr(C1(i,indices)',C2(j,indices)','type','pearson'),corr(C1(i,indices)',C2(j,indices)','type','spearman')]);
+                else
+                    corrs(l)=0;
+                end
+                
+                indices=find(indices_1b{i}{l}&indices_2b{j}{l});
+                
+                try
+                    corrs(l)=max([corrs(l),corr(C1(i,indices)',C2(j,indices)','type','pearson'),corr(C1(i,indices)',C2(j,indices)','type','spearman')]);
+                    
+                end
+                
+                correlations(k)=max(corrs);
+            end
+        else
+            correlations(k)=corr(C1(i,:)',C2(j,:)');
+        end
+        
+    else
+        correlations(k)=0;
+    end
+    
+    
+    
+end
+correlations=reshape(correlations,size(neuron1.C,1),size(neuron2.C,1));

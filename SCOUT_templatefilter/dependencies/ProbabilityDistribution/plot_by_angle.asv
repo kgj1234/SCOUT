@@ -1,0 +1,2 @@
+function vals=plot_by_angle(xwidth,ywidth,theta,power)
+radius=xwidth*ywidth./sqrt((xaxis*cos(theta)).^

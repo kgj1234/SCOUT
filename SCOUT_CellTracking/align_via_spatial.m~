@@ -1,0 +1,161 @@
+function [aligned_neurons,aligned_probabilities]=align_via_spatial(aligned_neurons,aligned_probabilities,pair_aligned,spat_aligned,spat_prob,min_prob)
+%% fill in aligned neurons matrix based on neurons in consecutive recordings
+% input:
+%   aligned_neurons: num_neurons x num_recordings-1 matrix
+%   aligned_probabilities: num_neurons x num_recordings-1 matrix
+%   pair_aligned: cell array, each element containing identifications for
+%   consecutive sessions
+%   spat_aligned: cell array, each element containing identifications
+%   between non-consecutive sessions
+%   spat_prob: cell array, each element containing identification
+%   probabilities between non-consecutive sessions
+%   min_prob: constant, minimal probability of identification between
+%   sessions
+% output:
+%   aligned_neurons: num_neurons x num_recordings-1 matrix
+%   aligned_probabilities: num_neurons x num_recordings-1 matrix
+%% Author: Kevin Johnston, University of California, Irvine.
+%Construct all possible chains of neurons using all pairwise recording
+%probabilities, allowed by the min_prob parameter
+for i=1:size(aligned_neurons,2)-2
+    for k=i+2:size(aligned_neurons,2)
+        
+        for j=1:size(aligned_neurons,1)
+            if j<= size(aligned_neurons,1)
+                if ~iszero(aligned_neurons(j,k))&iszero(aligned_neurons(i,k))
+                    %Find and connect neuron chains separated by at least
+                    %one recording
+                    ind=find(spat_aligned{i,k}(:,2)==aligned_neurons(j,k));
+                    
+                    prob_agg=spat_prob{i,k}(ind);
+                    rem_ind=find(prob_agg<min_prob);
+                    
+                    ind(rem_ind)=[];
+                    prob_agg(rem_ind)=[];
+                    if length(ind)==0
+                        continue;
+                    end
+                    
+                    temp_aligned={};
+                    temp_prob={};
+                    
+                    %Construct all possible corresponding chains
+                    for l=1:length(ind)
+                        curr_link_ind=find(aligned_neurons(:,k)==spat_aligned{i,k}(ind(l),2));
+                        
+                        warning('off','all')
+                        temp_aligned{l}=[aligned_neurons(curr_link_ind,1:i-1),repmat(spat_aligned{i,k}(ind(l),1),length(curr_link_ind),1),aligned_neurons(curr_link_ind,i+1:end)];
+                        
+                        temp_prob{l}=[aligned_probabilities(curr_link_ind,1:i-1),repmat(spat_prob{i,k}(ind(l)),length(curr_link_ind),1),aligned_probabilities(curr_link_ind,i+1:end)];
+                        warning('on','all')
+                        
+                    end
+                    
+                    if ~isempty(temp_aligned)
+                        temp_aligned=vertcat(temp_aligned{:});
+                        temp_prob=vertcat(temp_prob{:});
+                        [temp_aligned,temp_prob]=Eliminate_Duplicates(temp_aligned,temp_prob);
+                        %check probabilities to make sure new chains exceed
+                        %min_prob
+                        in_clust_prob=construct_combined_probabilities(temp_aligned,spat_prob,pair_aligned,spat_aligned,min_prob);
+                        rem_ind=find(in_clust_prob<min_prob);
+                        temp_aligned(rem_ind,:)=[];
+                        temp_prob(rem_ind,:)=[];
+                        
+                        
+                        aligned_neurons=[aligned_neurons;temp_aligned];
+                        aligned_probabilities=[aligned_probabilities;temp_prob];
+                        
+                        while size(aligned_neurons,1)>100000
+                            
+                            temp_probabilities=construct_combined_probabilities(aligned_neurons,spat_prob,pair_aligned,spat_aligned,min_prob);
+                            [~,ind]=sort(temp_probabilities,'descend');
+                            aligned_neurons=aligned_neurons(ind(1:50000),:);
+                            aligned_probabilities=aligned_probabilities(ind(1:50000),:);
+                            min_prob=min(temp_probabilities(ind(1:50000)))+.001;
+                        end
+                        
+                        
+                    end
+                end
+            else
+                break
+            end
+        end
+        
+        
+        %Remove repeats if available neurons grows too large.
+        %This should not be necessary
+        
+        
+        n=size(aligned_neurons,1);
+        for j=1:size(aligned_neurons,1)
+            if j<=size(aligned_neurons,1)
+                if iszero(aligned_neurons(j,k-1))&~iszero(aligned_neurons(j,i))
+                    
+                    ind=find(spat_aligned{i,k}(:,1)==aligned_neurons(j,i)&spat_aligned{i,k}(:,2)~=aligned_neurons(j,k));
+                    
+                    prob_agg=spat_prob{i,k}(ind);
+                    rem_ind=find(prob_agg<min_prob);
+                    
+                    ind(rem_ind)=[];
+                    prob_agg(rem_ind)=[];
+                    if length(ind)==0
+                        continue;
+                    end
+                    temp_aligned={};
+                    temp_prob={};
+                    
+                    
+                    for l=1:length(ind)
+                        curr_link_ind=find(aligned_neurons(:,k)==spat_aligned{i,k}(ind(l),2));
+                        curr_link_ind(curr_link_ind>n)=[];
+                        
+                        warning('off','all')
+                        temp_aligned{l}=[repmat(aligned_neurons(j,1:k-1),length(curr_link_ind),1),aligned_neurons(curr_link_ind,k:end)];
+                        
+                        temp_prob{l}=[repmat(aligned_probabilities(j,1:i-1),length(curr_link_ind),1),repmat(spat_prob{i,k}(ind(l)),length(curr_link_ind),1),aligned_probabilities(curr_link_ind,i+1:end)];
+                        warning('on','all')
+                    end
+                    
+                    if ~isempty(temp_aligned)
+                        temp_aligned=vertcat(temp_aligned{:});
+                        temp_prob=vertcat(temp_prob{:});
+                        [temp_aligned,temp_prob]=Eliminate_Duplicates(temp_aligned,temp_prob);
+                       
+                        in_clust_prob=construct_combined_probabilities(temp_aligned,spat_prob,pair_aligned,spat_aligned,min_prob);
+                        rem_ind=find(in_clust_prob<min_prob);
+                        temp_aligned(rem_ind,:)=[];
+                        temp_prob(rem_ind,:)=[];
+                        aligned_neurons=[aligned_neurons;temp_aligned];
+                        aligned_probabilities=[aligned_probabilities;temp_prob];
+                        
+                        while size(aligned_neurons,1)>100000
+                            
+                            temp_probabilities=construct_combined_probabilities(aligned_neurons,spat_prob,pair_aligned,spat_aligned,min_prob);
+                            [~,ind]=sort(temp_probabilities,'descend');
+                            aligned_neurons=aligned_neurons(ind(1:50000),:);
+                            aligned_probabilities=aligned_probabilities(ind(1:50000),:);
+                            min_prob=min(temp_probabilities(ind(1:50000)))+.001;
+                            
+                        end
+                        
+                    end
+                end
+            else
+                break
+            end
+            
+            
+            
+            %Remove repeats if available neurons grows too large.
+            %This should not be necessary There is currently a hard cap at
+            %1
+            %hundred thousand available neurons
+            
+        end
+    end
+end
+
+
+

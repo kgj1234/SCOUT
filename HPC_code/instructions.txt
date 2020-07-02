@@ -1,0 +1,128 @@
+Instructions for submitting and cell tracking concatenated recordings on the UCI HPC. These instructions can be modified for other distirbuted systems as required. Paths in BatchEndoscopeAutoHPC.sh need to be adjusted 
+
+
+
+
+
+After aligning video files:
+
+0. Ensure CNMF_E is located somewhere on HPC account. If not, navigate to CNMF_E location on base computer, and run scp -r CNMF_E username@hpc.oit.uci.edu:~/ in the terminal.
+
+
+
+
+1. For long term experiments, concatenate video files in groups of 6, with an overlap of 2 video files per batch (this can be adjusted. In BatchEndoscopeWrapper (and its relatives), adjust the number of vids_per_batch and overlap_per_batch to whatever is desired)
+
+2. Crop the video files to remove any issues induced by the alignment. Prior to running code, look at the max projections of the first and last videos, to determine what the cropping region should be. from this, we obtain height ranges [h_low,h_high],and width ranges [w_low,w_high] indicating the regions we intend to keep;
+
+3. Concatenate video with itself to double length, ensure video is saved as uint8
+
+Code
+vid_files=dir('./');
+vid_files={vid_files.name};
+%Remove .,.. from files list
+vid_files(1:2)=[];
+% New save location
+mkdir higherdirectory
+
+
+
+overlap_per_batch=2;
+vid_per_batch=6;
+
+j=1;
+while j<length(vid_files)-overlap_per_batch+1
+	current=[];
+	for k=j:min(j+vids_per_batch-1,length(vid_files))
+		load(vid_files{k})
+		%Y is the saved variable contained in vid_files{k}
+		current=cat(3,current,uint8(Y(h_low:h_high,w_low,w_high,:)));
+	end
+	j=j+4;
+end
+Y=cat(3,Y,Y);
+Ysiz=size(Y);
+[path,vid1,ext]=fileparts(vid_files{j});
+[path,vid2,ext]=filesparts(vid_files{k});
+save(['./higherdirectory/',vid1,'_',vid2],'Y','Ysiz','-v7.3');
+
+
+4. Navigate to higherdirectory, and transfer video files to pub account for HPC account
+
+in terminal navigate to higher directory
+
+scp *.mat username@hpc.oit.uci.edu:/pub/username
+
+(Change username in BatchEndoscopeWrapper (and its relatives) to your username instead of kgjohnst)
+
+5. Create batches variable. Navigate back to video directory, and obtain number of frames from each video file, and save in a variable called batches, in a file called batches. Transfer this to user base directory on HPC.
+
+code
+
+
+for i=1:length(vid_files)
+	Y=matfile(vid_files{i});
+	batches(i)=Y.Ysiz(1,3);
+end
+
+save('./higherdirectory/batches.mat','batches');
+
+in terminal
+
+scp batches.mat username@hpc.oit.uci.edu:~/
+
+
+6. compile and run matlab code for BatchEndosocopeWrapper,  BatchEndosocopeWrapperDouble BatchEndosocopeWrapperTriple BatchEndosocopeWrapperFull, by navigating to their location on the HPC in the terminal, and running 
+
+module load MATLAB
+mcc -m -v BatchEndoscopeWrapper.m -a (I think this works, otherwise, specify each required directory with -I foldername after BatchEndoscopeWrapper.m) for each Wrapper file.
+
+
+7. Submit jobs to HPC via qsub BatchEndoscopeSingle.sh, etc. with .sh files. If you wish to change the queue you are using, type nano BatchEndoscopeSingle.sh, and replace the desired queue after the -q tag.
+
+
+This code should take no longer than a day to run, unless you are dealing with a lot of videos (more than 70), and/or you are using a very slow CPU.
+
+
+
+8. Retrieve data from HPC. 
+
+code 
+
+mkdir results
+cd results
+
+scp username@hpc.oit.uci.edu:/pub/username/neuron*.mat ./
+
+
+Delete all files starting with neurons instead of neuron. I'm not 100% sure how scp works with regular expressions, so I didn't want to mess with what worked.
+
+
+9. Analyze data: You should now have 4 data files for each set of six videos, with an overlap of 2 videos worth of data between them. We will combine them all together to obtain data for the entire set of videos in the next section.
+
+Proceed to Combine_Experiments Folder in base CNMF_E directory.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
