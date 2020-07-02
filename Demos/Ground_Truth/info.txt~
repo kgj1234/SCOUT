@@ -1,0 +1,5 @@
+Folder contains ground truth data for recordings.
+
+A: Ground truth spatial footprints
+C: Ground truth neural signal (subdivided, i.e. indices 1:500 correspond to vid1.mat)
+S: Ground truth 

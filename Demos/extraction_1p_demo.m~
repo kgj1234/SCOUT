@@ -585,11 +585,7 @@ addpath(genpath(scoutpath));
 
 
 %Compare with ground truth
-load(fullfile('Ground_Truth','C'))
-C=C(:,1:500);
-correlations=corr(neuron.C',C');
-maxim=max(correlations,[],2);
-histogram(maxim)
-title('Correlations With Ground Truth')
+load(fullfile('Ground_Truth','C')
+
 
 

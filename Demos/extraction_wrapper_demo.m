@@ -37,9 +37,14 @@ min_corr=.8; %(set to .8 for restricted initialization)
 corr_noise=false;
 indices=[];
 min_pnr=5;
-JS=.06; %(set to 0 for CNMF-E extraction)
+JS=.06; %(spatial filter threshold, set to 0 for CNMF-E extraction)
 
 neuron=individual_extraction_main(filename,gSiz,data_type,max_neurons,min_corr,corr_noise,indices,min_pnr,JS);
 
-
+load(fullfile('Ground_Truth','C'))
+C=C(:,1:500);
+correlations=corr(neuron.C',C');
+maxim=max(correlations,[],2);
+histogram(maxim)
+title('Correlations With Ground Truth')
 
