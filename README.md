@@ -33,6 +33,7 @@ cell_register: Matrix of cell identifications across session
 A_per_session: spatial footprints of detected neurons in each session
 
 ## Requirements 
-MATLAB >2018a (untested for previous versions)
-MATLAB C++ compiler
+MATLAB >2018a (untested for previous versions)  
+MATLAB C++ compiler  
+Tested on CentOS 7 and Windows
 
