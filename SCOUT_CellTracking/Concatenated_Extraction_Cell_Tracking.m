@@ -22,8 +22,14 @@ else
     disp('Previous Extractions Available, selecting a previous extraction will overwrite extraction parameters')
     while true
         try
-            select_extraction=input(['Input an extraction between ',num2str(1), ' and ' num2str(length(folders)),...
+            if length(folders)==1
+                select_extraction=input(['Enter 1 to continue previous extraction',...
                 ', or input ' num2str(length(folders)+1) ' for new extraction. Input should be an integer: ']);
+            else
+                
+                select_extraction=input(['Input an extraction between ',num2str(1), ' and ' num2str(length(folders)),...
+                ', or input ' num2str(length(folders)+1) ' for new extraction. Input should be an integer: ']);
+            end
             break
         catch
             disp('Input should be an integer')
