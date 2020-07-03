@@ -2,7 +2,8 @@
 SCOUT (Single-Cell SpatiOtemporal LongitUdinal Tracking) is an end to end system for the preprocessing, extraction, and cell tracking of multi-session neural activity extracted from optical recordings. 
 
 ## Installation
-Download or clone the repository, and add to the matlab path.
+Download or clone the repository, and add to the matlab path. To add to the path, navigate to the base SCOUT directory, and run 
+    addpath(genpath('.')).
 
 ## Modules
 SCOUT is composed of 3 modules:
