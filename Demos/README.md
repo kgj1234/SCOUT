@@ -6,6 +6,9 @@ It is import that the only '.mat' files in the operating folder are the recordin
 
 Recordings should have '.mat' extension, and two variables Y (grayscale recording, 3 dimensional vector), and Ysiz (size(Y)).
 
+
+## Available Demos
+
 demo_preprocessing.m: This demonstrates the code for motion correction using NorMCorre. A folder is created and motion corrected recordings are saved in the folder. 
 
 Session_Registration_Demo.m: This demonstrates session registration as a preprocessing step. Recordings are saved in the base directory with the extension '_registered.mat'. (These should be deleted are moved before testing other demos)
