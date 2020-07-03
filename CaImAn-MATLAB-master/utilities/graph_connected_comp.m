@@ -23,5 +23,7 @@ if ~isequal(sA, sA')
     [ii jj] = find(sA);
     sA = sparse([ii jj],[jj ii], ones(1, 2*numel(ii)), size(sA,1), size(sA,2));
 end
-[l c] = graph_conn_comp_mex(sA);
+%[l c] = graph_conn_comp_mex(sA);
+G=graph(sA);
+l=conncomp(G);
 l = double(l); % make it compatible of the rest of Matlab
