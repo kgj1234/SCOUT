@@ -84,7 +84,7 @@ tic;
 try
     [M1,shifts1,template1] = normcorre_batch(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r);  % register filtered data
 catch
-    [M1,shifts1,template1] = normcorre_batch(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r);  % register filtered data
+    [M1,shifts1,template1] = normcorre(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r);  % register filtered data
 end
 toc
     % exclude boundaries due to high pass filtering effects
