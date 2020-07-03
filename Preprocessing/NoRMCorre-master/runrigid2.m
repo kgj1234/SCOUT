@@ -80,7 +80,13 @@ options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',40,'max_sh
 options_r.upd_template=false;
 
 %% register using the high pass filtered data and apply shifts to original data
-tic; [M1,shifts1,template1] = normcorre_batch(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r); toc % register filtered data
+tic;
+try
+    [M1,shifts1,template1] = normcorre_batch(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r);  % register filtered data
+catch
+    [M1,shifts1,template1] = normcorre_batch(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r);  % register filtered data
+end
+toc
     % exclude boundaries due to high pass filtering effects
 tic; Mr = apply_shifts(Yf,shifts1,options_r,bound/2,bound/2); toc % apply shifts to full dataset
     % apply shifts on the whole movie
