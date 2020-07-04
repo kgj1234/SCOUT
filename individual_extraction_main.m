@@ -1,4 +1,4 @@
-function [neuron,scoutpath]=individual_extraction_main(filename,gSiz,data_type,max_neurons,min_corr,corr_noise,indices,min_pnr,JS)
+function neuron=individual_extraction_main(filename,gSiz,data_type,max_neurons,min_corr,corr_noise,indices,min_pnr,JS)
 %Wrapper for neuron extraction. You can also use full_demo_endoscope (1p
 %   data) or demo_script(2p data) directly. This script may not work in
 %   parfor loops.
@@ -65,20 +65,6 @@ else
     extraction_options.min_pnr=5;
 end
 
-
-
-if ~exist('final_index','var')
-    error('Unable to find SCOUT on filepath. Ensure function is in SCOUT directory tree')
-else
-    if ~ispc
-        scoutpath=filesep;
-    else
-        scoutpath='';
-    end
-    for i=1:final_index
-    	scoutpath=fullfile(scoutpath,endout{i});
-    end
-end
 
 if isequal(data_type,'1p')
       neuron=full_demo_endoscope(filename,extraction_options);
