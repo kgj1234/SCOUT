@@ -6,16 +6,15 @@ Download or clone the repository, and add to the matlab path. To add to the path
     addpath(genpath('.')).
 
 ## Modules
-SCOUT is composed of 3 modules:
-
-Preprocessing - Contains code for motion correction (NorMCorre), and initial session registration (both rigid and non-rigid).
+SCOUT is composed of 2 modules:
 
 Extraction - Built on CNMF-E for 1-photon recordings, and CNMF for 2-photon recordings, SCOUT imposes an additional spatial filter proven to signficantly reduce false detection rates while retaining a comparable number of neurons to the base algorithm.
 
 Cell Tracking - SCOUT uses an ensemble of predictors to assign identification probabilities for neurons between sessions, followed by a corrector which forces each neuron to appear in exactly one column of the cell register (the matrix of cell identifications across sessions). This method has outperformed cellReg on simulated and in vivo data.
 
+SCOUT also includes motion correction using NorMCorre, and a framework for global session registration prior to extraction (see demos)
 ## Demos
-SCOUT currently contains five demos, demonstrating each module, as well as the full pipeline (see SCOUT/Demos). 
+SCOUT currently contains six demos, demonstrating each module, as well as the full pipeline (see SCOUT/Demos). 
 
 ## File Format
 Currently, SCOUT requires a specific format for recordings. Recordings must be saved with extension '.mat', and must contain variable Y (3 dimensional grayscale recording), and Ysiz (3 dimensional vector, size(Y)).

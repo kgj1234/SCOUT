@@ -142,7 +142,7 @@ HY_thr = HY;
 HY_thr(bsxfun(@lt, HY_thr, Ysig*sig)) = 0;
 
 % compute loal correlation
-if options.add_noise
+if isfield(options,'add_noise')&options.add_noise
     Cn=correlation_image(HY_thr,[1,2],d1,d2,[],[],true);
 else
     Cn = correlation_image(HY_thr, [1,2], d1,d2);
@@ -401,7 +401,7 @@ while searching_flag && K>0
             HY_box_thr(bsxfun(@lt, HY_box, Ysig_box*sig)) = 0;
             
             % update correlation image
-            if options.add_noise
+            if isfield(options,'add_noise')&options.add_noise
                 tmp_Cn=correlation_image(HY_box_thr,[1,2],nr2,nc2,[],[],true);
             else
                 tmp_Cn = correlation_image(HY_box_thr, [1,2], nr2, nc2);

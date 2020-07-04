@@ -1,7 +1,18 @@
+clear all
+clc
+
 %Preprocess with motion correction
 
+
 %List directory contents and remove all files without .mat extension
-vids=dir;
+vids_directory='./'; % Specify directory containing videos (demo must be run inside Demos folder
+                        %as this contains the video files. 
+                        %No other .mat files can be in this folder
+                        
+                        
+
+
+vids=dir(vids_directory);
 vids={vids.name};
 for i=length(vids):-1:1
     [path,name,ext]=fileparts(vids{i});
@@ -22,6 +33,7 @@ cd motion_corrected
 %full_demo_endoscope.m
 extraction_options.JS=.06; %(spatial constraint parameter)
 
+
 %cell tracking options (fully defined in cellTracking_SCOUT)
 cell_tracking_options.chain_prob=.5; %(Chain probability threshold)
 cell_tracking_options.min_prob=.5; %(individual identification probability threshold)
@@ -35,7 +47,7 @@ base_dir='./'; %(Directory containing video files)
 vids_per_batch=1; %(Set to 1 for standard cell tracking. Increasing this parameter constructs concatenated 
                     %videos for use in longer term cell tracking) 
 overlap_per_batch=0; %(Set to 0 for standard cell tracking. Must be at least one if vids_per_batch>1)
-data_type='1p';
+data_type='1p'; %1p or 2p
 
 BatchEndoscopeWrapper(base_dir,vids_per_batch,overlap_per_batch,data_type,extraction_options,cell_tracking_options)
 

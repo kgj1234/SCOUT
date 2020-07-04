@@ -49,47 +49,12 @@ else
     
 end
 try
-    rmfield(cell_tracking_options','links')
+    cell_tracking_options=rmfield(cell_tracking_options','links');
 end
 
 save('global_extraction_parameters','global_extraction_parameters')
 save('extraction_options','extraction_options')
 save('cell_tracking_options','cell_tracking_options')
-
-%Find SCOUT filepath
-file_path = mfilename('fullpath');
-[path,~,~]=fileparts(file_path);
-endout=regexp(path,filesep,'split');
-for i=1:length(endout)
-    if isequal(endout{i},'SCOUT')
-        final_index=i;
-        break
-    end
-end
-
-if ~exist('final_index','var')
-    error('Unable to find SCOUT on filepath. Ensure function is in SCOUT directory tree')
-else
-    if ~ispc
-        scoutpath=filesep;
-    else
-        scoutpath='';
-    end
-    for i=1:final_index
-    	scoutpath=fullfile(scoutpath,endout{i});
-    end
-end
-
-if isequal(data_type,'1p')
-   rmpath(genpath(fullfile(scoutpath,'CaImAn-MATLAB-master')))
-   addpath(genpath(fullfile(scoutpath,'CNMF_E')))
-elseif isequal(data_type,'2p')
-    rmpath(genpath(fullfile(scoutpath,'CNMF_E')));
-    addpath(genpath(fulllfile(scoutpath,'CaImAn-MATLAB-master')))
-else
-    error('disallowed data_type variable')
-
-end
 
 
 
@@ -144,7 +109,7 @@ while total_empty>0 & extract_iter<=3
                     if isequal(data_type,'1p')
                         neurons{i}=full_demo_endoscope(fullfile('extraction_recordings',['concatenated_video',num2str(i),'.mat']),extraction_options);
                     elseif isequal(data_type,'2p')
-                        neurons{i}=demo_script(fullfile('extraction_recordings',['concatenated_video',num2str(i),'.mat']),extraction_options);
+                        neurons{i}=full_demo_endoscope_2p(fullfile('extraction_recordings',['concatenated_video',num2str(i),'.mat']),extraction_options);
                     end
                     log = fopen( 'log.txt', 'a' );
                     fprintf(log,['extraction of recording', num2str(i), 'successful\n']);

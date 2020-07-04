@@ -2,7 +2,7 @@
 
 Demos have been tested on Linux and Windows
 
-It is import that the only '.mat' files in the operating folder are the recordings you want to process.
+It is important that the only '.mat' files in the operating folder are the recordings you want to process.
 
 Recordings should have '.mat' extension, and two variables Y (grayscale recording, 3 dimensional vector), and Ysiz (size(Y)).
 
@@ -15,7 +15,7 @@ Session_Registration_Demo.m: This demonstrates session registration as a preproc
 
 extraction_1p_demo.m: Demonstrates code for 1-photon recording extraction. The output is neuron (Sources2D object)
 
-extraction_2p_demo.m: (This is not ready yet)
+extraction_2p_demo.m: (This does not have a spatial filter yet)
 
 extraction_wrapper_demo.m: Demonstrates the extraction wrapper, which allows specification of fewer variables, and is easy to use. Output is neuron (Sources2D object)
 

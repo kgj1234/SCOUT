@@ -580,8 +580,6 @@ neuron.A=full(neuron.A);
 
 
 
-%Add full scoutpath back to matlab path
-addpath(genpath(scoutpath));
 
 
 %Compare with ground truth

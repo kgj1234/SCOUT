@@ -65,19 +65,7 @@ else
     extraction_options.min_pnr=5;
 end
 
-%Find SCOUT filepath
-file_path = mfilename('fullpath');
-if isempty(file_path)
-    file_path=pwd;
-end
-[path,~,~]=fileparts(file_path);
-endout=regexp(path,filesep,'split');
-for i=1:length(endout)
-    if isequal(endout{i},'SCOUT')
-        final_index=i;
-        break
-    end
-end
+
 
 if ~exist('final_index','var')
     error('Unable to find SCOUT on filepath. Ensure function is in SCOUT directory tree')
@@ -93,17 +81,11 @@ else
 end
 
 if isequal(data_type,'1p')
-   rmpath(genpath(fullfile(scoutpath,'CaImAn-MATLAB-master')))
-   addpath(genpath(fullfile(scoutpath,'CNMF_E')))
-   
-   neuron=full_demo_endoscope(filename,extraction_options);
+      neuron=full_demo_endoscope(filename,extraction_options);
    
 elseif isequal(data_type,'2p')
-    addpath(genpath(fullfile(scoutpath,'CaImAn-MATLAB-master')));
-    rmpath(genpath(fullfile(scoutpath,'CNMF_E')));
-    neuron=demo_script(filename,extraction_options);
+       neuron=full_demo_endoscope_2p(filename,extraction_options);
 else
     error('disallowed data_type variable')
 
 end
-addpath(genpath(scoutpath));

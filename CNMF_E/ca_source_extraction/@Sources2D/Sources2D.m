@@ -14,6 +14,7 @@ classdef Sources2D < handle
         f;          % temporal components of backgrounds
         S;          % spike counts
         Sn;         % Noise
+        frame_range;
         C_raw;      % raw traces of temporal components
         Cn;         % correlation image
         Coor;       % neuron contours
@@ -53,6 +54,17 @@ classdef Sources2D < handle
         SNR;
         C_thresh;
         S_thresh;
+        batches;
+        file_id;
+        W;
+        b0;
+        ids;
+        b0_new;
+        A_prev;
+        C_prev;
+        PNR;
+        
+        
     end
     
     %% methods

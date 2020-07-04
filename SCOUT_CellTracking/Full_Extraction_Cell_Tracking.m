@@ -49,46 +49,11 @@ else
     
 end
 try
-    cell_tracking_opttions=rmfield(cell_tracking_options,'links')
+    cell_tracking_opttions=rmfield(cell_tracking_options,'links');
 end
 save('global_extraction_parameters','global_extraction_parameters','-v7.3')
 save('extraction_options','extraction_options','-v7.3')
 save('cell_tracking_options','cell_tracking_options','-v7.3')
-
-%Find SCOUT filepath
-file_path = mfilename('fullpath');
-[path,~,~]=fileparts(file_path);
-endout=regexp(path,filesep,'split');
-for i=1:length(endout)
-    if isequal(endout{i},'SCOUT')
-        final_index=i;
-        break
-    end
-end
-
-if ~exist('final_index','var')
-    error('Unable to find SCOUT on filepath. Ensure function is in SCOUT directory tree')
-else
-    if ~ispc
-        scoutpath=filesep;
-    else
-        scoutpath='';
-    end
-    for i=1:final_index
-    	scoutpath=fullfile(scoutpath,endout{i});
-    end
-end
-
-if isequal(data_type,'1p')
-   rmpath(genpath(fullfile(scoutpath,'CaImAn-MATLAB-master')))
-   addpath(genpath(fullfile(scoutpath,'CNMF_E')))
-elseif isequal(data_type,'2p')
-    rmpath(genpath(fullfile(scoutpath,'CNMF_E')));
-    addpath(genpath(fulllfile(scoutpath,'CaImAn-MATLAB-master')))
-else
-    error('disallowed data_type variable')
-
-end
 
 
 
@@ -153,7 +118,7 @@ while total_empty>0 & extract_iter<=3
                         
                         neurons{i}=full_demo_endoscope(fullfile('..',vid_files{i}{1}),extraction_options);
                     elseif isequal(data_type,'2p')
-                        neurons{i}=demo_script(fullfile('..',vid_files{i}{1}),extraction_options);
+                        neurons{i}=full_demo_endoscope_2p(fullfile('..',vid_files{i}{1}),extraction_options);
                     else
                         error('invalid datatype')
                     end
@@ -176,7 +141,7 @@ while total_empty>0 & extract_iter<=3
                         links{i-length(neurons)}=full_demo_endoscope(fullfile('connecting_recordings',...
                             ['connecting_recording',num2str(i-length(neurons))]),extraction_options);
                     elseif isequal(data_type,'2p')
-                        links{i-length(neurons)}=demo_script(fullfile('connecting_recordings',...
+                        links{i-length(neurons)}=full_demo_endoscope_2p(fullfile('connecting_recordings',...
                             ['connecting_recording',num2str(i-length(neurons))]),extraction_options);
                     else
                         error('invalid datatype')
