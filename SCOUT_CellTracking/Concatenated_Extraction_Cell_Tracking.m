@@ -38,9 +38,9 @@ else
     if select_extraction<=length(folders)
         cd(['extraction_',num2str(select_extraction)])
         try
-            load(fullfile('.','global_extraction_parameters'))
-            load(fullfile('.','extraction_options'))
-            load(fullfile('.','cell_tracking_options'))
+            load(fullfile('.','global_extraction_parameters'),'global_extraction_parameters')
+            load(fullfile('.','extraction_options'),'extraction_options')
+            load(fullfile('.','cell_tracking_options'),'cell_tracking_options')
         end
     else
         mkdir(['extraction_',num2str(length(folders)+1)])
@@ -64,7 +64,11 @@ if ~isfolder('extraction_recordings')
     for k=1:length(vid_files)
         Y1=[];
         for j=1:length(vid_files{k});
-            load(fullfile('../','../',vid_files{k}{j}))
+            try
+                load(fullfile('../','../',vid_files{k}{j}),'Y')
+            catch
+                error(['Incorrect File Format for', vid_files{k}{j}])
+            end
             Y1=cat(3,Y1,Y);
         end
         Y=Y1;

@@ -38,9 +38,9 @@ else
     if select_extraction<=length(folders)
         cd(['extraction_',num2str(select_extraction)])
         try
-            load(fullfile('.','global_extraction_parameters'))
-            load(fullfile('.','extraction_options'))
-            load(fullfile('.','cell_tracking_options'))
+            load(fullfile('.','global_extraction_parameters'),'global_extraction_parameters')
+            load(fullfile('.','extraction_options'),'extraction_options')
+            load(fullfile('.','cell_tracking_options'),'cell_tracking_options')
         end
     else
         mkdir(['extraction_',num2str(length(folders)+1)])
@@ -61,11 +61,14 @@ if ~isfolder('connecting_recordings')
     mkdir('connecting_recordings')
     cd('connecting_recordings')
     for k=1:length(vid_files)-1
-        load(fullfile('..','..',vid_files{k}{1}));
+        try
+        load(fullfile('..','..',vid_files{k}{1}),'Y');
         Y1=Y(:,:,end-cell_tracking_options.overlap+1:end);
-        load(fullfile('..','..',vid_files{k+1}{1}));
+        load(fullfile('..','..',vid_files{k+1}{1}),'Y');
         Y1=cat(3,Y1,Y(:,:,1:cell_tracking_options.overlap+1));
-        
+        catch
+            error('Error loading files')
+        end
         Y=Y1;
         Ysiz=size(Y);
         save(['connecting_recording',num2str(k)],'Y','Ysiz','-v7.3');

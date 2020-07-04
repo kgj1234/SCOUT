@@ -19,9 +19,9 @@ extraction_2p_demo.m: (This does not have a spatial filter yet)
 
 extraction_wrapper_demo.m: Demonstrates the extraction wrapper, which allows specification of fewer variables, and is easy to use. Output is neuron (Sources2D object)
 
-Cell_Tracking_Demo.m: Demonstrates cell tracking on recordings in the current directory. Saves neuron (Sources2D) object containing neural tracking data.
+Cell_Tracking_Demo.m: Demonstrates cell tracking on recordings in the current directory. Saves neuron (Sources2D) object containing neural tracking data, as SCOUT_neuron.mat in the extraction folder.
 
-full_pipeline_demo.m: Demonstrates full data processing pipeline (excluding interactive session registration). Saves neuron (Sources2D) object containing neural tracking data.
+full_pipeline_demo.m: Demonstrates full data processing pipeline (excluding interactive session registration). Saves neuron (Sources2D) object containing neural tracking data as SCOUT_neuron.mat in the extraction folder.
 
 
 

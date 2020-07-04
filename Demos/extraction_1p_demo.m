@@ -3,34 +3,7 @@
 clear all
 clc
 
-file_path = mfilename('fullpath');
-if isempty(file_path)
-    file_path=pwd;
-end
-[path,~,~]=fileparts(file_path);
-endout=regexp(path,filesep,'split');
-for i=1:length(endout)
-    if isequal(endout{i},'SCOUT')
-        final_index=i;
-        break
-    end
-end
 
-if ~exist('final_index','var')
-    error('Unable to find SCOUT on filepath. Ensure function is in SCOUT directory tree')
-else
-    if ~ispc
-        scoutpath=filesep;
-    else
-        scoutpath='';
-    end
-    for i=1:final_index
-    	scoutpath=fullfile(scoutpath,endout{i});
-    end
-end
-warning('off','all')
-rmpath(genpath(fullfile(scoutpath,'CaImAn-MATLAB-master')));
-warning('on','all')
 
 %Inputs
 
