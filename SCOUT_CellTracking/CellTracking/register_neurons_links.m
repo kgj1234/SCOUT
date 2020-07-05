@@ -1,6 +1,8 @@
 function [neurons,links]=register_neurons_links(neurons,links,registration_template,registration_type,registration_method,base)
 
 reg_thresh=.2;
+%Change this if normalizing neuron footprints prior to registration is 
+%desirable.
 normalize=false;
 
 R=imref2d(neurons{1}.imageSize);
@@ -53,7 +55,7 @@ else
             template_prev_norm=max(reshape(neurons{i-1}.A./max(neurons{i-1}.A,[],1),neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
         end
         [neurons{i},mse]=register_neurons_ind(neurons{i},template_prev,template_prev_norm,template_curr,template_curr_norm,normalize,registration_method);
-        if mse<reg_thresh
+        if mse>reg_thresh
             warning('Registration Failed')
         end
     end

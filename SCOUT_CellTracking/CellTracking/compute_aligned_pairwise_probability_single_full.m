@@ -125,6 +125,7 @@ if length(NN_distance{1})>0
          min_coord(min_coord<2)=[];
         
          if ~isempty(min_coord)
+             min_num_neighbors=min(min_num_neighbors,length(NN_distance{1}));
              x=max(min_coord(1)*2,NN_distance{1}(min_num_neighbors));
          elseif min_num_neighbors<length(NN_distance{1})
              x=max(2,NN_distance{1}(min_num_neighbors));

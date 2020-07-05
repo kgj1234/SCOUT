@@ -12,18 +12,18 @@ try
                 tform1=imregtform(template,base_template,registration_method,optimizer,metric);
                 template=imwarp(template,tform1,'OutputView',R);
                 registration2=[];
-                template_norm=imwarp(template_norm,tform1,'OutputView',R);
-                mse1=MSE_registration_metric(template_norm,base_template_norm);
+                %template_norm=imwarp(template_norm,tform1,'OutputView',R);
+                mse1=MSE_registration_metric(template,base_template);
             else
                 tform1=imregtform(template,base_template,'affine',optimizer,metric);
                 template=imwarp(template,tform1,'OutputView',R);
-                template_norm=imwarp(template_norm,tform1,'OutputView',R);
+                %template_norm=imwarp(template_norm,tform1,'OutputView',R);
                 
                 registration2=registration2d(base_template,template,'transformationModel',registration_method);
                 template=deformation(template,registration2.displacementField,registration2.interpolation);
-                template_norm=deformation(template_norm,registration2.displacementField,registration2.interpolation);
+                %template_norm=deformation(template_norm,registration2.displacementField,registration2.interpolation);
                 
-                mse1=MSE_registration_metric(template_norm,base_template_norm);
+                mse1=MSE_registration_metric(template,base_template);
             end
 catch
     mse1=[];
@@ -31,13 +31,13 @@ end
 try
      registration1=registration2d(base_template,template,'transformationModel','translation');
      template=imtranslate(template,-1*[registration1.transformationMatrix(1,3), registration1.transformationMatrix(2,3)],'FillValues',0);
-     template_norm=imtranslate(template_norm,-1*[registration1.transformationMatrix(1,3), registration1.transformationMatrix(2,3)],'FillValues',0);
+     %template_norm=imtranslate(template_norm,-1*[registration1.transformationMatrix(1,3), registration1.transformationMatrix(2,3)],'FillValues',0);
      
      
      registration2=registration2d(base_template,template,'transformationModel',registration_method);
      template=deformation(template,registration2.displacementField,registration2.interpolation);
-     template_norm=deformation(template_norm,registration2.displacementField,registration2.interpolation);
-     mse2=MSE_registration_metric(template_norm,base_template_norm);
+     %template_norm=deformation(template_norm,registration2.displacementField,registration2.interpolation);
+     mse2=MSE_registration_metric(template,base_template);
 catch
     mse2=[];
 end
