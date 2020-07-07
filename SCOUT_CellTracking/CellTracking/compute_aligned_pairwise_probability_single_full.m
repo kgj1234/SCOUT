@@ -86,7 +86,6 @@ if ~exist('min_num_neighbors_factor','var')
     min_num_neighbors_factor=1;
 end
 
-min_num_neighbors=min(ceil(size(distance_metrics{1},1)*min_num_neighbors_factor),length(NN_distance{1}));
 max_iter=15;
 %Sort by centroid distance
 [NN_distance{1},Ind]=sort(NN_distance{1});
@@ -105,6 +104,7 @@ end
 
 
 
+min_num_neighbors=min(ceil(size(distance_metrics{1},1)*min_num_neighbors_factor),length(NN_distance{1}));
 
 %Limit data points based on kernel density
 x=[];

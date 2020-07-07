@@ -47,4 +47,12 @@ correlations=corr(neuron.C',C');
 maxim=max(correlations,[],2);
 histogram(maxim)
 title('Correlations With Ground Truth')
+figure()
+plot_contours(neuron.A,neuron.Cn,0.8, 1, [], [], 2)
+title('Correlation Image')
+figure()
+imagesc(max(reshape(neuron.A,256,256,[]),[],3))
+title('Spatial Footprints')
+
+
 

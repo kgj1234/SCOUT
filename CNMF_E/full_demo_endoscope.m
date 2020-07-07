@@ -439,9 +439,9 @@ for zz=1:2
       
        if JS>0 & zz>1
            %Uncomment if neuron removal is not desired at this stage 
-           extraction_options.filter=false;
+           %extraction_options.filter=false;
            
-           spatial_filter_options.trim=true;
+           %spatial_filter_options.trim=true;
            spatial_filter_options.data_shape=[neuron_full.options.d1,neuron_full.options.d2];
            
             [~,JS_score]=spatial_filter(neuron,spatial_filter_options);

@@ -37,3 +37,40 @@ MATLAB >2018a (untested for previous versions)
 MATLAB C++ compiler  
 Tested on CentOS 7 and Windows
 
+## Pipeline
+1. Motion correct via NoRMCorre (demo_preprocessing.m demo)
+2. Perform session alignment (Session_Registration_Demo.m demo)
+3. Extract and Track Neurons (cell_Tracking_Demo.m)
+
+The current full_pipeline_demo.m does not include session alignment code (as this code is interactive).   
+Either use the individual demos, or perform session registration as an intermediate step inside full_pipeline_demo.m
+
+## Troubleshooting
+1. What if I am extracting too few neurons?  
+Answer: raise the spatial_filter threshold if too many neurons are being deleted, 
+or lower the initialization parameters if too few neurons are initialized. Both operations can be controlled with extraction_options.
+
+2. What if I am tracking too few neurons? Check the automated post processing session alignment, or turn it off altogether. 
+Lower min_prob or chain_prob parameters. Try increasing the session overlap. These parameters can be controlled with cell_tracking_options.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
