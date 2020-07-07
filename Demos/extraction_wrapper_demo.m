@@ -29,7 +29,7 @@ clc
 %%Author Kevin Johnston
 
 
-filename='vid1.mat';
+filename='vid1.tif';
 gSiz=25;
 data_type='1p';
 max_neurons=400;

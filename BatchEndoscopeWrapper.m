@@ -1,4 +1,4 @@
-function BatchEndoscopeWrapper(base_dir,vids_per_batch,overlap_per_batch,data_type,extraction_options,cell_tracking_options)
+function BatchEndoscopeWrapper(base_dir,vids_per_batch,overlap_per_batch,data_type,threads,extraction_options,cell_tracking_options)
 %Wrapper for cell extraction followed by cell tracking
 
 %inputs
@@ -11,6 +11,7 @@ function BatchEndoscopeWrapper(base_dir,vids_per_batch,overlap_per_batch,data_ty
     
 
 %data_type (str) '1p' or '2p'
+%threads (int) number of parallel threads to use
 % extraction_options (struct) see options in full_demo_endoscope (1p) or
     % demo_script (2p)
 % cell_tracking_options (struct) see options in full_demo_endoscope
@@ -45,8 +46,8 @@ total_files={f.name};
 vid_files={};
 for i=1:length(total_files);
     [filepath,name,ext]= fileparts(total_files{i});
-    if isequal(ext,'.tif')||isequal(ext,'.mat')
-	
+    %if isequal(ext,'.tif')||isequal(ext,'.mat')||isequal(ext,'.avi')
+	if isequal(ext,'.mat')
         vid_files{end+1}=horzcat(filepath,name,ext);
         
     end
@@ -66,7 +67,9 @@ for i=1:length(vid_files)
     batches(i)=Y.Ysiz(1,3);
 end
 
-
+if ~isfield(extraction_options,'overlap')||isempty(extraction_options.overlap);
+    extraction_options.overlap=12000;
+end
 batch_sizes={};
 batch_vids={};
 j=1;
@@ -83,33 +86,37 @@ while j<length(batches)-overlap_per_batch+1
     try
         overlap_sizes(i)=sum(batch_sizes{i}(end-overlap_per_batch+1:end))-2;
     end
-    else
-        overlap_sizes(i)=batch_sizes{i}-1;
-    end
+    
     
     
     
     j=j+vids_per_batch-overlap_per_batch;
     i=i+1;
+    else
+        j=j+vids_per_batch;
+        i=i+1;
+    end
     
 end
 end
-if ~isfield(cell_tracking_options,'overlap')
+if ~isfield(cell_tracking_options,'overlap')&overlap_per_batch>0
     cell_tracking_options.overlap=min(12000,min(overlap_sizes));
-else
+elseif overlap_per_batch>0
     try
         cell_tracking_options.overlap=min([12000,min(overlap_sizes),cell_tracking_options.overlap]);
     catch
         cell_tracking_options.overlap=0;
     end
+else
+    cell_tracking_options.overlap=0;
 end
 
 if vids_per_batch>1
        
-     Concatenated_Extraction_Cell_Tracking(batch_vids,base_dir,batch_sizes,data_type,overlap_per_batch,extraction_options,cell_tracking_options);
+     Concatenated_Extraction_Cell_Tracking(batch_vids,base_dir,batch_sizes,data_type,overlap_per_batch,threads,extraction_options,cell_tracking_options);
 elseif vids_per_batch==1
     
-     Full_Extraction_Cell_Tracking(batch_vids,base_dir,batch_sizes,data_type,extraction_options,cell_tracking_options);
+     Full_Extraction_Cell_Tracking(batch_vids,base_dir,batch_sizes,data_type,threads,extraction_options,cell_tracking_options);
 end
     
     

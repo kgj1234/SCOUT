@@ -2,10 +2,10 @@
 
 Demos have been tested on Linux and Windows
 
-It is important that the only '.mat' files in the operating folder are the recordings you want to process.
+extraction_wrapper_demo.m requires a '.mat' file. Motion correction saves
+the result as '.mat', and accepts avi, tif, mat extensions. 
 
-Recordings should have '.mat' extension, and two variables Y (grayscale recording, 3 dimensional vector), and Ysiz (size(Y)).
-
+full_pipeline_demo works with avi, tif, mat extensions
 
 ## Available Demos
 

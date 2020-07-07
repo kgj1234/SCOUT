@@ -39,6 +39,15 @@ elseif or(strcmpi(file_type, '.tif'), strcmpi(file_type, '.tiff'))
     fprintf('converting the selected file to *.mat version...\n');
     nam_mat = tif2mat(nam);
     fprintf('Time cost in converting data to *.mat file:     %.2f seconds\n', toc);
+elseif strcmpi(file_type, '.avi')
+    % convert
+    tic;
+    fprintf('converting the selected file to *.mat version...\n');
+    v=VideoReader(nam);
+    Y=v.read;
+    Ysiz=size(Y);
+    save(file_nm,'Y','Ysiz','-v7.3')
+    fprintf('Time cost in converting data to *.mat file:     %.2f seconds\n', toc);
 elseif or(strcmpi(file_type, '.h5'), strcmpi(file_type, '.hdf5'))
     fprintf('the selected file is hdf5 file\n'); 
     temp = h5info(nam);

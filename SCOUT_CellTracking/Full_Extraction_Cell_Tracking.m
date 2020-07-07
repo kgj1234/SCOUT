@@ -1,9 +1,9 @@
-function []=Concatenated_Extraction_Cell_Tracking(vid_files,base_dir,batch_sizes,data_type,extraction_options,cell_tracking_options);
+function []=Full_Extraction_Cell_Tracking(vid_files,base_dir,batch_sizes,data_type,threads,extraction_options,cell_tracking_options);
 global_extraction_parameters.vid_files=vid_files;
 global_extraction_parameters.base_dir=base_dir;
 global_extraction_parameters.batch_sizes=batch_sizes;
 global_extraction_parameters.data_type=data_type;
-
+global_extraction_parameters.threads=threads;
 
 folders=dir;
 is_dir=cell2mat({folders.isdir});
@@ -49,7 +49,7 @@ else
     
 end
 try
-    cell_tracking_opttions=rmfield(cell_tracking_options,'links');
+    cell_tracking_options=rmfield(cell_tracking_options,'links');
 end
 save('global_extraction_parameters','global_extraction_parameters','-v7.3')
 save('extraction_options','extraction_options','-v7.3')
@@ -112,9 +112,16 @@ for i=1:length(neurons)
     end
 end
 extract_iter=1;
+n1=length(neurons);
+n2=length(links);
+if isfield(global_extraction_parameters,'threads')
+    delete(gcp('nocreate'))
+    parpool(global_extraction_parameters.threads);
+end
 while total_empty>0 & extract_iter<=3
-    for i=1:length(vid_files)+length(links)
-            if i<=length(vid_files)&isempty(neurons{i})
+    
+    parfor i=1:n1
+            %if i<=length(vid_files)&&isempty(neurons{i})
                 try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
@@ -136,16 +143,18 @@ while total_empty>0 & extract_iter<=3
                     
                     fclose(log);
                 end
-            elseif i>length(vid_files) &isempty(links{i-length(neurons)})
-                 try
+            %elseif i>length(vid_files)&&isempty(links{i-n1})
+    end
+            parfor i=1:length(links) 
+                try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
                         
-                        links{i-length(neurons)}=full_demo_endoscope(fullfile('connecting_recordings',...
-                            ['connecting_recording',num2str(i-length(neurons))]),extraction_options);
+                        links{i}=full_demo_endoscope(fullfile('connecting_recordings',...
+                            ['connecting_recording',num2str(i)]),extraction_options);
                     elseif isequal(data_type,'2p')
-                        links{i-length(neurons)}=full_demo_endoscope_2p(fullfile('connecting_recordings',...
-                            ['connecting_recording',num2str(i-length(neurons))]),extraction_options);
+                        links{i}=full_demo_endoscope_2p(fullfile('connecting_recordings',...
+                            ['connecting_recording',num2str(i)]),extraction_options);
                     else
                         error('invalid datatype')
                     end
@@ -162,7 +171,7 @@ while total_empty>0 & extract_iter<=3
                 end
             end
             
-    end
+    
     extract_iter=extract_iter+1;
     total_empty=0;
     for i=1:length(neurons)

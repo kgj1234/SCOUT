@@ -14,8 +14,8 @@ function neuron=Combine_Full_Experiment(neurons,global_extraction_parameters,cel
 
 %Author: Kevin Johnston, University of California, Irvine
 
-min_frame_overlap=ceil(cell_tracking_options.overlap);
-cell_tracking_options.overlap=ceil(cell_tracking_options.overlap);
+min_frame_overlap=ceil(cell_tracking_options.overlap/2);
+cell_tracking_options.overlap=ceil(cell_tracking_options.overlap/2);
 
 %Construct overlapping recordings
 for i=1:length(neurons)

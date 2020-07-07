@@ -17,9 +17,16 @@ end
 gcp;
 
 %addpath(genpath('../../NoRMCorre'));
-if ischar(file)
+[path,name,ext]=fileparts(file);
+if ischar(file)&isequal(ext,'.mat')
     Yf = struct2cell(load(file));
     Yf = single(Yf{1});
+elseif ischar(file)&isequal(ext,'.avi')
+    v=VideoReader(file);
+    Yf=read(v);
+    Yf=single(Yf);
+elseif ischar(file)&(isequal(ext,'.tif')||isequal(ext,'.tiff'))
+    Yf=loadtiff(file);
 else
     Yf=single(file);
 end
@@ -99,8 +106,8 @@ if save_file
 mkdir motion_corrected
 [path,name,ext]=fileparts(file);
 if ~isempty(path)
-save(fullfile(path,'motion_corrected',[name,'_motion_corrected',ext]),'Y','Ysiz','-v7.3')
+save(fullfile(path,'motion_corrected',[name,'_motion_corrected','.mat']),'Y','Ysiz','-v7.3')
 else
-save(fullfile('.','motion_corrected',[name,'_motion_corrected',ext]),'Y','Ysiz','-v7.3')
+save(fullfile('.','motion_corrected',[name,'_motion_corrected','.mat']),'Y','Ysiz','-v7.3')
 end
 end

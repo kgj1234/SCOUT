@@ -65,7 +65,7 @@ p=inputParser;
 
 addRequired(p,'neurons');
 for i=1:length(optional_parameters)
-    addOptional(p,optional_parameters{i},defaults{i},@(x) isequal(class(defaults{i}),class(x))); 
+    addOptional(p,optional_parameters{i},defaults{i},@(x) isequal(class(defaults{i}),class(x))||isempty(x)); 
 end
 
 parse(p,neurons,varargin{:});

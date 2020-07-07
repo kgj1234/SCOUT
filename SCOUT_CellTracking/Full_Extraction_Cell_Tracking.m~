@@ -1,9 +1,9 @@
-function []=Concatenated_Extraction_Cell_Tracking(vid_files,base_dir,batch_sizes,data_type,extraction_options,cell_tracking_options);
+function []=Full_Extraction_Cell_Tracking(vid_files,base_dir,batch_sizes,data_type,threads,extraction_options,cell_tracking_options);
 global_extraction_parameters.vid_files=vid_files;
 global_extraction_parameters.base_dir=base_dir;
 global_extraction_parameters.batch_sizes=batch_sizes;
 global_extraction_parameters.data_type=data_type;
-
+global_extraction_parameters.threads=threads;
 
 folders=dir;
 is_dir=cell2mat({folders.isdir});
@@ -38,9 +38,9 @@ else
     if select_extraction<=length(folders)
         cd(['extraction_',num2str(select_extraction)])
         try
-            load(fullfile('.','global_extraction_parameters'),global_extraction_parameters)
-            load(fullfile('.','extraction_options'),extraction_options)
-            load(fullfile('.','cell_tracking_options'),cell_tracking)
+            load(fullfile('.','global_extraction_parameters'),'global_extraction_parameters')
+            load(fullfile('.','extraction_options'),'extraction_options')
+            load(fullfile('.','cell_tracking_options'),'cell_tracking_options')
         end
     else
         mkdir(['extraction_',num2str(length(folders)+1)])
@@ -49,7 +49,7 @@ else
     
 end
 try
-    cell_tracking_opttions=rmfield(cell_tracking_options,'links');
+    cell_tracking_options=rmfield(cell_tracking_options,'links');
 end
 save('global_extraction_parameters','global_extraction_parameters','-v7.3')
 save('extraction_options','extraction_options','-v7.3')
@@ -61,11 +61,14 @@ if ~isfolder('connecting_recordings')
     mkdir('connecting_recordings')
     cd('connecting_recordings')
     for k=1:length(vid_files)-1
-        load(fullfile('..','..',vid_files{k}{1}));
+        try
+        load(fullfile('..','..',vid_files{k}{1}),'Y');
         Y1=Y(:,:,end-cell_tracking_options.overlap+1:end);
-        load(fullfile('..','..',vid_files{k+1}{1}));
+        load(fullfile('..','..',vid_files{k+1}{1}),'Y');
         Y1=cat(3,Y1,Y(:,:,1:cell_tracking_options.overlap+1));
-        
+        catch
+            error('Error loading files')
+        end
         Y=Y1;
         Ysiz=size(Y);
         save(['connecting_recording',num2str(k)],'Y','Ysiz','-v7.3');
@@ -109,9 +112,16 @@ for i=1:length(neurons)
     end
 end
 extract_iter=1;
+n1=length(neurons);
+n2=length(links);
+if isfield(global_extraction_parameters,'threads')
+    delete(gcp('nocreate'))
+    parpool(global_extraction_parameters.threads);
+end
 while total_empty>0 & extract_iter<=3
-    for i=1:length(vid_files)+length(links)
-            if i<=length(vid_files)&isempty(neurons{i})
+    
+    parfor i=1:n1
+            if i<=length(vid_files)&&isempty(neurons{i})
                 try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
@@ -133,16 +143,16 @@ while total_empty>0 & extract_iter<=3
                     
                     fclose(log);
                 end
-            elseif i>length(vid_files) &isempty(links{i-length(neurons)})
+            %elseif i>length(vid_files)&&isempty(links{i-n1})
                  try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
                         
-                        links{i-length(neurons)}=full_demo_endoscope(fullfile('connecting_recordings',...
-                            ['connecting_recording',num2str(i-length(neurons))]),extraction_options);
+                        links{i-n1}=full_demo_endoscope(fullfile('connecting_recordings',...
+                            ['connecting_recording',num2str(i-n1)]),extraction_options);
                     elseif isequal(data_type,'2p')
-                        links{i-length(neurons)}=full_demo_endoscope_2p(fullfile('connecting_recordings',...
-                            ['connecting_recording',num2str(i-length(neurons))]),extraction_options);
+                        links{i-n1}=full_demo_endoscope_2p(fullfile('connecting_recordings',...
+                            ['connecting_recording',num2str(i-n1)]),extraction_options);
                     else
                         error('invalid datatype')
                     end

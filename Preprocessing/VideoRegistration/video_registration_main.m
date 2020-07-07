@@ -14,6 +14,12 @@ function video_registration_main(use_non_rigid,base_index,projection_type,automa
 %use_non_rigid- booleans indicating whether to apply non-rigid
 %transformations
 
+%automated (bool) indicates whether to auto accept registration
+
+%%Author Kevin Johnston
+
+%%
+
 close all
 %Identify files in folder with extensions possibly indicating video files
 if ~exist('use_non_rigid','var') || isempty(use_non_rigid)
@@ -98,7 +104,8 @@ if length(projections)==0
     end
 end
 
-
+mkdir registered
+cd registered
 
 aligned={};
 aligned{base_index}=vids{base_index};
@@ -295,7 +302,7 @@ while  nonempty<length(vid_paths)
             if ~isempty(Y)
                 Ysiz=size(Y);
                 [path,name,ext]=fileparts(vid_paths{i});
-                name=[name,'_registered'];
+                %name=[name,'_registered'];
                 save(fullfile(path,name),'Y','Ysiz','-v7.3');
                 try
                 template=projections{i};
@@ -326,7 +333,7 @@ for i=1:length(aligned)
     Y=uint8(aligned{i});
     Ysiz=size(Y);
     [path,name,ext]=fileparts(vid_paths{i});
-    name=[name,'_registered'];
+    %name=[name,'_registered'];
     save(fullfile(path,name),'Y','Ysiz','-v7.3');
     saved_files{i}=vid_paths{i};
 end

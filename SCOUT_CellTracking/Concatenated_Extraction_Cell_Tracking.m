@@ -1,9 +1,10 @@
-function []=Concatenated_Extraction_Cell_Tracking(vid_files,base_dir,batch_sizes,data_type,overlap_per_batch,extraction_options,cell_tracking_options);
+function []=Concatenated_Extraction_Cell_Tracking(vid_files,base_dir,batch_sizes,data_type,overlap_per_batch,threads,extraction_options,cell_tracking_options);
 global_extraction_parameters.vid_files=vid_files;
 global_extraction_parameters.base_dir=base_dir;
 global_extraction_parameters.batch_sizes=batch_sizes;
 global_extraction_parameters.data_type=data_type;
 global_extraction_parameters.overlap_per_batch=overlap_per_batch;
+global_extraction_parameters.threads=threads;
 
 folders=dir;
 is_dir=cell2mat({folders.isdir});
@@ -105,8 +106,13 @@ for i=1:length(neurons)
     end
 end
 extract_iter=1;
+if isfield(global_extraction_parameters,'threads')
+    delete(gcp('nocreate'))
+    parpool(global_extraction_parameters.threads);
+end
+
 while total_empty>0 & extract_iter<=3
-    for i=1:length(neurons)
+    parfor i=1:length(neurons)
         if isempty(neurons{i})
             try
                     disp(strcat('batch',num2str(i),'initialization'))
@@ -150,7 +156,6 @@ for i=1:length(neurons)
 end
 end
 
-addpath(genpath(scoutpath))
 if cell_tracking_options.overlap>0
     neuron=Combine_Full_Experiment(neurons,global_extraction_parameters,cell_tracking_options);
 else

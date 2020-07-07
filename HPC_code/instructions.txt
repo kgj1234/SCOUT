@@ -1,3 +1,5 @@
+%Still in Progress
+
 Instructions for submitting and cell tracking concatenated recordings on the UCI HPC. These instructions can be modified for other distirbuted systems as required. Paths in BatchEndoscopeAutoHPC.sh need to be adjusted 
 
 
