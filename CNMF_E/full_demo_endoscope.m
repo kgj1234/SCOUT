@@ -401,8 +401,8 @@ neuron.orderROIs(srt);
 neuron_init = neuron.copy();
 
 
-gSiz=gSiz*2;
-gSizMin=gSizMin*2;
+gSiz=gSiz*ssub;
+gSizMin=gSizMin*ssub;
 spatial_filter_options.imageSize=[d1,d2];
 spatial_filter_options.gSiz=gSiz;
 spatial_filter_options.gSizMin=gSizMin;

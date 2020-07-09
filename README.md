@@ -17,7 +17,7 @@ SCOUT also includes motion correction using NoRMCorre, and a framework for globa
 SCOUT currently contains six demos, demonstrating each module, as well as the full pipeline (see SCOUT/Demos). 
 
 ## File Format
-Currently, SCOUT requires a specific format for recordings. Recordings must be saved with extension '.mat', and must contain variable Y (3 dimensional grayscale recording), and Ysiz (3 dimensional vector, size(Y)).
+Currently, most SCOUT modules accept '.avi', '.mat', '.tif/.tiff' file formats for recordings.
 
 ## Output
 Output of both cell extraction and cell tracking is in the form of the Sources2D (CNMF for 2p) class. The following fields are of primary importance

@@ -59,6 +59,7 @@ if ~isfield(extraction_options,'JS')||isempty(extraction_options.JS)
 else
     JS=extraction_options.JS;
 end
+
 if ~isfield(extraction_options,'indices')
     indices=[];
 else

@@ -44,6 +44,9 @@ cell_tracking_options.min_prob=.5; %(individual identification probability thres
 cell_tracking_options.overlap=[]; %(Overlap size on each recording, 1/2 the length of the connecting recording, set to [] for max frames)
 cell_tracking_options.weights=[4,5,5,0,0,0]; %Ensemble weights
 cell_tracking_options.probability_assignment_method='Kmeans'; %(Probabilistic method for assigning identification probabilities)
+cell_tracking_options.max_gap=0; %(Only report neurons tracked through full experiment)
+cell_tracking_options.max_dist=40; %(maximum distance between neurons, larger values preferred, this value is corrected, so don't worry about making it too big)
+
 
 
 %Global cell tracking parameters
@@ -53,6 +56,7 @@ vids_per_batch=1; %(Set to 1 for standard cell tracking. Increasing this paramet
 overlap_per_batch=0; %(Set to 0 for standard cell tracking (with vids_per_batch=1) )
 data_type='1p'; %1p or 2p
 threads=2; %Number of sessions to extract simultaneously, high values can easily exceed memory threshold, but significantly boost speed
+
 
 
 BatchEndoscopeWrapper(base_dir,vids_per_batch,overlap_per_batch,data_type,threads,extraction_options,cell_tracking_options)
