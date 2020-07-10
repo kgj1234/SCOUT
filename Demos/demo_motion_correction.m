@@ -13,7 +13,8 @@ vids=dir;
 vids={vids.name};
 for i=length(vids):-1:1
     [path,name,ext]=fileparts(vids{i});
-    if ~isequal(ext,'.mat')||isequal(name,'.dir')
+    if ~(isequal(ext,'.mat')||isequal(ext,'.avi')||isequal(ext,'.tif')||...
+            isequal(ext,'.tiff'))||isequal(name,'.dir')
         vids(i)=[];
     end
 end
