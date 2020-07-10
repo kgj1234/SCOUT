@@ -157,10 +157,10 @@ while  nonempty<length(vid_paths)
     
     fixed_proj=double(projections{base_selection});
     moving_proj=double(projections{alter_selection});
-    if isequal(projection_type,'correlation')
-        fixed_proj(fixed_proj<.15)=0;
-        moving_proj(moving_proj<.15)=0;
-    end
+%     if isequal(projection_type,'correlation')
+%         fixed_proj(fixed_proj<.08)=0;
+%         moving_proj(moving_proj<.08)=0;
+%     end
     try
         R=imref2d(size(fixed_proj));
         [optimizer, metric] = imregconfig('multimodal');
