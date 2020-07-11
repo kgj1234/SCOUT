@@ -255,6 +255,7 @@ for t = 1:bin_width:T
     
     switch lower(options.output_type)
         case 'mat'
+            %Edited
             if nd == 2; M_final(:,:,t:min(t+bin_width-1,T)) = Mf; end
             if nd == 3; M_final(:,:,:,t:min(t+bin_width-1,T)) = Mf; end
         case 'memmap'

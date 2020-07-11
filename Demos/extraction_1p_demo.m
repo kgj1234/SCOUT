@@ -33,7 +33,7 @@ clc
 
 %%
 
-filename='vid1.avi';
+filename='vid1.mat';
 extraction_options.indices=[];
 extraction_options.JS=.06; %(set to 0 for CNMF-E extraction)
 extraction_options.min_pnr=5;

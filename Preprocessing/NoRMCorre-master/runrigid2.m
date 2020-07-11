@@ -31,29 +31,6 @@ else
     Yf=single(file);
 end
 
-% if ~exist('template_location','var')||isempty(template_location)
-%     light=[];
-%     parfor k=1:size(Yf,3)
-%      %   mov_back(:,:,k)=medfilt2(remove_template_background(Yf(:,:,k)));
-%         light(k)=sum(Yf(:,:,k),'all');
-%     end
-%     prc=prctile(light,60);
-%     indices=light<prc;
-%     %template_test=(std(mov_back(:,:,indices),[],3)+max(mov_back(:,:,indices),[],3));
-%     template_test=max(Yf(:,:,indices),[],3);
-%     minim=min(template_test(template_test>0));
-%     template_test=imadjust(template_test/255,[minim/255,1])*255;
-% else
-%     template_test=struct2cell(load(template_location));
-%     template_test=template_test{1};
-% end
-%template_test=construct_template(Yf);
-%template_max=mean(Yf,3);
-
-%template_test=(template_test+double(template_max)*max(template_test,[],'all')/max(template_max,[],'all'));
-%template_test=template_test/max(template_test,[],'all');
-%template_test=max(Yf,[],3);
-%template_test=mean(Yf,3);
 if length(size(Yf))==4
     Yf=squeeze(max(Yf,[],3));
 end
@@ -70,8 +47,8 @@ if (0)
     %Ypc = Yf - Y;
     bound = size(hLarge,1);
 else
-    gSig = 7; %%original 7
-    gSiz = 20; %%original 17
+    gSig = 3; %%original 7
+    gSiz = 7; %%original 17
     psf = fspecial('gaussian', round(gSiz), gSig);
     ind_nonzero = (psf(:)>=max(psf(:,1)));
     psf = psf-mean(psf(ind_nonzero));
@@ -79,15 +56,16 @@ else
     %Y = imfilter(Yf,psf,'same');
     %bound = 2*ceil(gSiz/2);
     Y = imfilter(Yf,psf,'symmetric');
-    bound = 0;
+    bound = 50;
 end
 %% first try out rigid motion correction
     % exclude boundaries due to high pass filtering effects
-options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',40,'max_shift',7,'iter',2,'correct_bidir',false);
-options_r.upd_template=false;
-
+options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',40,'max_shift',8,'iter',2,'correct_bidir',false);
+options_r.upd_template=true;
+options_r.init_batch=50;
 %% register using the high pass filtered data and apply shifts to original data
 tic;
+%template=max(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,500:end),[],3);
 try
     [M1,shifts1,template1] = normcorre_batch(Y(bound/2+1:end-bound/2,bound/2+1:end-bound/2,:),options_r);  % register filtered data
 catch

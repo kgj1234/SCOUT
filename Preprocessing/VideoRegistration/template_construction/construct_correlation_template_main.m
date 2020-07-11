@@ -1,4 +1,7 @@
-function templates=construct_correlation_template_main()
+function templates=construct_correlation_template_main(data_type)
+if ~exist('data_type','var')||isempty(data_type)
+    data_type='1p';
+end
 mkdir templates
 vid_files=dir;
 vid_files={vid_files.name};
@@ -19,7 +22,7 @@ vids=vids(ind);
 
 for i=1:length(vids)
     
-    templates{i}=construct_correlation_template(['./',vids{i}],[],20,12,'prc',12);
+    templates{i}=construct_correlation_template(['./',vids{i}],[],20,12,'prc',18,data_type);
     
 end
 

@@ -1,4 +1,4 @@
-function video_registration_main(use_non_rigid,base_index,projection_type,automatic,projection_paths)
+function video_registration_main(use_non_rigid,base_index,projection_type,automatic,projection_paths,data_type)
 %Modifies vid_files listed in current folder to match the file at index base_index in vid_path
 
 %For example, use this code to consecutively align videos in a folder, or align all videos to a baseline.
@@ -15,6 +15,8 @@ function video_registration_main(use_non_rigid,base_index,projection_type,automa
 %transformations
 
 %automated (bool) indicates whether to auto accept registration
+
+%data_type (str) '1p' or '2p'
 
 %%Author Kevin Johnston
 
@@ -34,6 +36,9 @@ if ~exist('base_index','var')||isempty(base_index)
 end
 if ~exist('automatic','var')||isempty(automatic);
     automatic=false;
+end
+if ~exist('data_type','var')||isempty(data_type)
+    data_type='1p';
 end
 
 
@@ -100,7 +105,7 @@ if length(projections)==0
         end
     else
         
-        projections=construct_correlation_template_main();
+        projections=construct_correlation_template_main(data_type);
     end
 end
 
