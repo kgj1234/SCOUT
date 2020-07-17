@@ -24,6 +24,7 @@ catch
     Y=Y1;
 end
 Y = neuron.reshape(double(Y), 1); 
+clear Y1
 
 if ssub ==1 
     neuron.P.sn = sn; 

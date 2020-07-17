@@ -18,9 +18,10 @@ function A=plot_ellipse(xwidth,ywidth,modelfun,beta,angle,centroid,data_shape)
 %%
 
 
+rad=max(xwidth,ywidth);
+max_reg_deg=round(rad^2);
 
-
-[t,r] = meshgrid(linspace(0,2*pi,361),linspace(0,max(xwidth,ywidth),ceil(2*max(xwidth,ywidth))));
+[t,r] = meshgrid(linspace(0,2*pi,max_reg_deg),linspace(0,max(xwidth,ywidth),ceil(2*max(xwidth,ywidth))));
 
 %Construct image by drawing radial lines from centroid
 Z=plot_by_angle(xwidth,ywidth,r,t,angle,modelfun,beta);

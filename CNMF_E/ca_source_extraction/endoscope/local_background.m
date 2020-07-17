@@ -107,6 +107,8 @@ Yest = zeros(size(Y));
 weights = cell(d1s, d2s);
 Yest1=cell(1,length(ind_px));
 weights1=cell(1,length(ind_px));
+
+%Altered to allow parfor here, but memory requirements make inadvisable
 for m=1:length(ind_px)
     px = ind_px(m);
     ind_nhood = sub2ind([d1s,d2s], rsub(px, :), csub(px, :));
@@ -134,8 +136,11 @@ end
 for m=1:length(ind_px)
     px=ind_px(m);
     Yest(px,:)=Yest1{m};
+    Yest1{m}=[];
     weights{px}=weights1{m};
+    weights1{m}=[];
 end
+clear weights1 Yest1
 results.weights = weights;
 results.ssub = ssub;
 results.dims = [d1s, d2s]; 
@@ -150,6 +155,10 @@ Yest = reshape(Yest, d1s, d2s, []);
 warning('on','MATLAB:nearlySingularMatrix'); 
 warning('on','MATLAB:SingularMatrix'); 
 %% return the result
+
+%Increase memory capcacity somewhat
+clear csub ind_event ind_nhood ind_px neigh_kernel rsub sn rmp_ind rmpXX rmpXy weights X y Yconv Y
+
 if ssub>1 %up sampling
     Yest = imresize(Yest, [d1, d2]);
 end

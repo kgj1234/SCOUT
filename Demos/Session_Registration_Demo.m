@@ -12,7 +12,7 @@
 
 use_non_rigid=true;
 base_index=2;
-projection_type='correlation';
+projection_type='max';
 
 video_registration_main(use_non_rigid,base_index,projection_type);
 

@@ -75,6 +75,9 @@ if ~isfolder('connecting_recordings')
     end
     cd ../
 end
+Y=[];
+Y1=[];
+
 
 try 
     load(fullfile('.','neurons'));
@@ -116,10 +119,12 @@ n1=length(neurons);
 n2=length(links);
 if isfield(global_extraction_parameters,'threads')
     delete(gcp('nocreate'))
-    parpool(global_extraction_parameters.threads);
+    if global_extraction_parameters.threads>0
+        parpool(global_extraction_parameters.threads);
+    end
 end
 while total_empty>0 & extract_iter<=3
-    
+    if isfield(global_extraction_parameters,'threads')&global_extraction_parameters.threads>1
     parfor i=1:n1
             %if i<=length(vid_files)&&isempty(neurons{i})
                 try
@@ -150,10 +155,10 @@ while total_empty>0 & extract_iter<=3
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
                         
-                        links{i}=full_demo_endoscope(fullfile('connecting_recordings',...
+                        links{i}=full_demo_endoscope(fullfile('.','connecting_recordings',...
                             ['connecting_recording',num2str(i)]),extraction_options);
                     elseif isequal(data_type,'2p')
-                        links{i}=full_demo_endoscope_2p(fullfile('connecting_recordings',...
+                        links{i}=full_demo_endoscope_2p(fullfile('.','connecting_recordings',...
                             ['connecting_recording',num2str(i)]),extraction_options);
                     else
                         error('invalid datatype')
@@ -170,7 +175,58 @@ while total_empty>0 & extract_iter<=3
                     fclose(log);
                 end
             end
-            
+    else
+        for i=1:n1
+            %if i<=length(vid_files)&&isempty(neurons{i})
+                try
+                    disp(strcat('session',num2str(i),'initialization'))
+                    if isequal(data_type,'1p')
+                        
+                        neurons{i}=full_demo_endoscope(fullfile('..',vid_files{i}{1}),extraction_options);
+                    elseif isequal(data_type,'2p')
+                        neurons{i}=full_demo_endoscope_2p(fullfile('..',vid_files{i}{1}),extraction_options);
+                    else
+                        error('invalid datatype')
+                    end
+                    log = fopen( 'log.txt', 'a' );
+                    fprintf(log,['extraction of recording', num2str(i), 'successful\n']);
+                    fclose(log);
+                catch ME
+                    
+                    msgText = getReport(ME);
+                    log = fopen( 'log.txt', 'a' );
+                    fprintf(log,['extraction of recording', num2str(i), 'unsuccessful\n ',msgText,'\n']);
+                    
+                    fclose(log);
+                end
+            %elseif i>length(vid_files)&&isempty(links{i-n1})
+        end
+            for i=1:length(links) 
+                try
+                    disp(strcat('session',num2str(i),'initialization'))
+                    if isequal(data_type,'1p')
+                        
+                        links{i}=full_demo_endoscope(fullfile('.','connecting_recordings',...
+                            ['connecting_recording',num2str(i)]),extraction_options);
+                    elseif isequal(data_type,'2p')
+                        links{i}=full_demo_endoscope_2p('.',fullfile('connecting_recordings',...
+                            ['connecting_recording',num2str(i)]),extraction_options);
+                    else
+                        error('invalid datatype')
+                    end
+                    log = fopen( 'log.txt', 'a' );
+                    fprintf(log,['extraction of recording', num2str(i), 'successful\n']);
+                    fclose(log);
+                catch ME
+                    
+                    msgText = getReport(ME);
+                    log = fopen( 'log.txt', 'a' );
+                    fprintf(log,['extraction of recording', num2str(i), 'unsuccessful\n ',msgText,'\n']);
+                    
+                    fclose(log);
+                end
+            end
+    end
     
     extract_iter=extract_iter+1;
     total_empty=0;
@@ -191,18 +247,23 @@ end
 save('neurons','neurons','-v7.3')
 save('links','links','-v7.3')
 
-%Optional extra merging on links
-if isequal(data_type,'1p')
-for i=1:length(links)
-    links{i}.MergeNeighbors([2,15]);
-    links{i}.remove_false_positives(false,true);
-end
-end
-
 
 if total_empty>0
     error('Not all recordings extracted')
 end
+
+
+%Optional extra merging on links
+if isequal(data_type,'1p')
+for i=1:length(links)
+    try
+    links{i}.MergeNeighbors([2,15]);
+    links{i}.remove_false_positives(false,true);
+    end
+end
+end
+
+
 
 cell_tracking_options.links=links;
 neuron=cellTracking_SCOUT(neurons,'cell_tracking_options',cell_tracking_options);

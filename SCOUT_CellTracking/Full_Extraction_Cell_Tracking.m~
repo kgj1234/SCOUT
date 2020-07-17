@@ -75,6 +75,9 @@ if ~isfolder('connecting_recordings')
     end
     cd ../
 end
+Y=[];
+Y1=[];
+
 
 try 
     load(fullfile('.','neurons'));
@@ -116,12 +119,14 @@ n1=length(neurons);
 n2=length(links);
 if isfield(global_extraction_parameters,'threads')
     delete(gcp('nocreate'))
-    parpool(global_extraction_parameters.threads);
+    if global_extraction_parameters.threads>0
+        parpool(global_extraction_parameters.threads);
+    end
 end
 while total_empty>0 & extract_iter<=3
-    
+    if isfield(global_extraction_parameters,'threads')&global_extraction_parameters.threads>0
     parfor i=1:n1
-            if i<=length(vid_files)&&isempty(neurons{i})
+            %if i<=length(vid_files)&&isempty(neurons{i})
                 try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
@@ -144,15 +149,17 @@ while total_empty>0 & extract_iter<=3
                     fclose(log);
                 end
             %elseif i>length(vid_files)&&isempty(links{i-n1})
-                 try
+    end
+            parfor i=1:length(links) 
+                try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
                         
-                        links{i-n1}=full_demo_endoscope(fullfile('connecting_recordings',...
-                            ['connecting_recording',num2str(i-n1)]),extraction_options);
+                        links{i}=full_demo_endoscope(fullfile('connecting_recordings',...
+                            ['connecting_recording',num2str(i)]),extraction_options);
                     elseif isequal(data_type,'2p')
-                        links{i-n1}=full_demo_endoscope_2p(fullfile('connecting_recordings',...
-                            ['connecting_recording',num2str(i-n1)]),extraction_options);
+                        links{i}=full_demo_endoscope_2p(fullfile('connecting_recordings',...
+                            ['connecting_recording',num2str(i)]),extraction_options);
                     else
                         error('invalid datatype')
                     end
@@ -169,7 +176,7 @@ while total_empty>0 & extract_iter<=3
                 end
             end
             
-    end
+    
     extract_iter=extract_iter+1;
     total_empty=0;
     for i=1:length(neurons)

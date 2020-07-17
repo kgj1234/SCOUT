@@ -75,9 +75,12 @@ if ~isfolder('extraction_recordings')
         Y=Y1;
         Ysiz=size(Y);
         save(['concatenated_video',num2str(k)],'Y','Ysiz','-v7.3');
+        
     end
     cd ../
 end
+Y=[];
+Y1=[];
 
 try 
     load(fullfile('.','neurons'));

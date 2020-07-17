@@ -74,7 +74,7 @@ else
     
 end
 gSiz=gSiz/2;
-gSizMin=7;   
+gSizMin=5;   
 gSizMin=gSizMin/2;
 
 % minimum diameter of neurons in the image plane.

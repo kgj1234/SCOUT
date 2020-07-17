@@ -98,9 +98,11 @@ if length(projections)==0
     if isequal(projection_type,'max')
         for i=1:length(vid_paths)
             
-            [Ydt, X, R] = detrend_data(reshape(double(vids{i}),[],size(vids{i},3)),4);
+            [Ydt, ~,~] = detrend_data(reshape(double(vids{i}),[],size(vids{i},3)),4);
             Ydt=reshape(Ydt,size(vids{i},1),size(vids{i},2),[]);
-            projections{i}=max(Ydt,[],3);
+            
+            projections{i}=double(max(Ydt,[],3));
+            Ydt=[];
            
         end
     else
@@ -136,7 +138,7 @@ while  nonempty<length(vid_paths)
             end
         end
     end
-    fixed=double(aligned{base_selection});
+  
     unaligned=setdiff(1:length(vid_paths),indices);
     while true
        

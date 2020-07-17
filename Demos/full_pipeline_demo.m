@@ -55,7 +55,7 @@ vids_per_batch=1; %(Set to 1 for standard cell tracking. Increasing this paramet
                     %videos for use in longer term cell tracking) 
 overlap_per_batch=0; %(Set to 0 for standard cell tracking (with vids_per_batch=1) )
 data_type='1p'; %1p or 2p
-threads=2; %Number of sessions to extract simultaneously, high values can easily exceed memory threshold, but significantly boost speed
+threads=4; %Number of sessions to extract simultaneously, high values can easily exceed memory threshold, but significantly boost speed
 
 
 

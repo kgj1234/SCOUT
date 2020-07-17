@@ -99,15 +99,21 @@ while j<length(batches)-overlap_per_batch+1
     
 end
 end
-if ~isfield(cell_tracking_options,'overlap')&overlap_per_batch>0
-    cell_tracking_options.overlap=min(12000,min(overlap_sizes));
-elseif overlap_per_batch>0
-    try
-        cell_tracking_options.overlap=min([12000,min(overlap_sizes),cell_tracking_options.overlap]);
-    catch
-        cell_tracking_options.overlap=0;
+if overlap_per_batch==0
+    if isfield(cell_tracking_options,'overlap')
+        cell_tracking_options.overlap=min([12000,min(cell2mat(batch_sizes))-2,cell_tracking_options.overlap]);
+    else
+        cell_tracking_options.overlap=min(12000,min(cell2mat(batch_sizes))-2);
     end
 else
+    
+    if ~isfield(cell_tracking_options,'overlap')
+        cell_tracking_options.overlap=min(12000,min(overlap_sizes));
+    else
+        cell_tracking_options.overlap=min([12000,min(overlap_sizes)-2,cell_tracking_options.overlap]);
+    end
+end
+if vids_per_batch>1 & overlap_per_batch==0
     cell_tracking_options.overlap=0;
 end
 

@@ -6,6 +6,11 @@
 %Extraction parameters (unset fields revert to default values in
 %full_demo_endoscope.m
 extraction_options.JS=.06; %(spatial constraint parameter)
+extraction_options.gSiz=23;
+extraction_options.min_corr=.8;
+extraction_options.max_neurons=300;
+
+
 
 %cell tracking options (fully defined in cellTracking_SCOUT)
 cell_tracking_options.chain_prob=.5; %(Chain probability threshold)
