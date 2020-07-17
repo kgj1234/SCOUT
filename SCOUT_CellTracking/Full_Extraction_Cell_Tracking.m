@@ -57,7 +57,7 @@ save('cell_tracking_options','cell_tracking_options','-v7.3')
 
 
 
-if ~isfolder('connecting_recordings')
+if ~isfolder('connecting_recordings')&cell_tracking_options.overlap>0
     mkdir('connecting_recordings')
     cd('connecting_recordings')
     for k=1:length(vid_files)-1

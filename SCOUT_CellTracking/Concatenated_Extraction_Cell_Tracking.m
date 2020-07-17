@@ -120,9 +120,9 @@ while total_empty>0 & extract_iter<=3
             try
                     disp(strcat('batch',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
-                        neurons{i}=full_demo_endoscope(fullfile('extraction_recordings',['concatenated_video',num2str(i),'.mat']),extraction_options);
+                        neurons{i}=full_demo_endoscope(fullfile('.','extraction_recordings',['concatenated_video',num2str(i),'.mat']),extraction_options);
                     elseif isequal(data_type,'2p')
-                        neurons{i}=full_demo_endoscope_2p(fullfile('extraction_recordings',['concatenated_video',num2str(i),'.mat']),extraction_options);
+                        neurons{i}=full_demo_endoscope_2p(fullfile('.','extraction_recordings',['concatenated_video',num2str(i),'.mat']),extraction_options);
                     end
                     log = fopen( 'log.txt', 'a' );
                     fprintf(log,['extraction of recording', num2str(i), 'successful\n']);
