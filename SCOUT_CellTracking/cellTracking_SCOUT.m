@@ -59,7 +59,7 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 optional_parameters={'links','weights','max_dist','overlap','chain_prob','corr_thresh','register_sessions','registration_type','registration_method',...
     'registration_template','use_corr','use_spat','max_gap','probability_assignment_method','base','min_prob','binary_corr','max_sess_dist',...
     'footprint_threshold','cell_tracking_options','single_corr'};
-defaults={{},[4,5,5,2,0],45,[],.5,.6,true,'align-to-base','non-rigid','spatial',false,true,0,'Kmeans',ceil(length(neurons)/2),.5,false,20,.1,struct,false};
+defaults={{},[4,5,5,0,0,0],45,[],.5,.6,true,'align-to-base','non-rigid','spatial',false,true,0,'Kmeans',ceil(length(neurons)/2),.5,false,20,.1,struct,false};
 
 p=inputParser;
 
