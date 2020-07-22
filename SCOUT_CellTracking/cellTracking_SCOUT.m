@@ -167,8 +167,11 @@ end
 
 
 if register_sessions
-    
-   [neurons,links]=register_neurons_links(neurons,links,registration_template,registration_type,registration_method,base);
+   %3 alignment iterations
+   for k=1
+        [neurons,links]=register_neurons_links(neurons,links,registration_template,registration_type,registration_method,base);
+        %base=randi([1,length(neurons)],1,1);
+   end
 end
 for i=1:length(neurons)
     neurons{i}.updateCentroid();
