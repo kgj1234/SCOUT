@@ -67,8 +67,8 @@ for i=1:length(vid_files)
     batches(i)=Y.Ysiz(1,3);
 end
 
-if ~isfield(extraction_options,'overlap')||isempty(extraction_options.overlap);
-    extraction_options.overlap=12000;
+if ~isfield(cell_tracking_options,'overlap')||isempty(cell_tracking_options.overlap);
+    cell_tracking_options.overlap=12000;
 end
 batch_sizes={};
 batch_vids={};

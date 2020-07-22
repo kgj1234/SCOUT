@@ -5,7 +5,7 @@ if normalize
 end
 
 R=imref2d(neuron.imageSize);
-
+ref_temp=template;
 try
             [optimizer, metric] = imregconfig('multimodal');
             if ~isequal(registration_method,'non-rigid')
@@ -28,6 +28,7 @@ try
 catch
     mse1=[];
 end
+template=ref_temp;
 try
      registration1=registration2d(base_template,template,'transformationModel','translation');
      template=imtranslate(template,-1*[registration1.transformationMatrix(1,3), registration1.transformationMatrix(2,3)],'FillValues',0);

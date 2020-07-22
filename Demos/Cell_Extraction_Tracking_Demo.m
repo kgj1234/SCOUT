@@ -5,9 +5,9 @@
 
 %Extraction parameters (unset fields revert to default values in
 %full_demo_endoscope.m
-extraction_options.JS=.06; %(spatial constraint parameter)
+extraction_options.JS=.1; %(spatial constraint parameter)
 extraction_options.gSiz=23;
-extraction_options.min_corr=.8;
+extraction_options.min_corr=.75;
 extraction_options.max_neurons=300;
 
 
@@ -15,7 +15,7 @@ extraction_options.max_neurons=300;
 %cell tracking options (fully defined in cellTracking_SCOUT)
 cell_tracking_options.chain_prob=.5; %(Chain probability threshold)
 cell_tracking_options.min_prob=.5; %(individual identification probability threshold)
-cell_tracking_options.overlap=250; %(Overlap size on each recording, 1/2 the length of the connecting recording)
+cell_tracking_options.overlap=2000; %(overlap size on each recording, 1/2 the length of the connecting recording)
 cell_tracking_options.weights=[4,5,5,0,0,0]; %Ensemble weights
 cell_tracking_options.probability_assignment_method='Kmeans'; %(Probabilistic method for assigning identification probabilities)
 
