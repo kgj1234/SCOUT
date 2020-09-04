@@ -126,7 +126,7 @@ end
 while total_empty>0 & extract_iter<=3
     if isfield(global_extraction_parameters,'threads')&global_extraction_parameters.threads>1
     parfor i=1:n1
-            %if i<=length(vid_files)&&isempty(neurons{i})
+            if isempty(neurons{i})
                 try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
@@ -148,9 +148,11 @@ while total_empty>0 & extract_iter<=3
                     
                     fclose(log);
                 end
-            %elseif i>length(vid_files)&&isempty(links{i-n1})
+            end
+           
     end
             parfor i=1:length(links) 
+                if isempty(links{i})
                 try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
@@ -174,10 +176,11 @@ while total_empty>0 & extract_iter<=3
                     
                     fclose(log);
                 end
+                end
             end
     else
         for i=1:n1
-            %if i<=length(vid_files)&&isempty(neurons{i})
+            if isempty(neurons{i})
                 try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
@@ -199,9 +202,10 @@ while total_empty>0 & extract_iter<=3
                     
                     fclose(log);
                 end
-            %elseif i>length(vid_files)&&isempty(links{i-n1})
+            end
         end
             for i=1:length(links) 
+                if isempty(links{i})
                 try
                     disp(strcat('session',num2str(i),'initialization'))
                     if isequal(data_type,'1p')
@@ -224,6 +228,7 @@ while total_empty>0 & extract_iter<=3
                     fprintf(log,['extraction of recording', num2str(i), 'unsuccessful\n ',msgText,'\n']);
                     
                     fclose(log);
+                end
                 end
             end
     end
