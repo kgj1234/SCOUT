@@ -52,9 +52,17 @@ if (~exist('patch_sz', 'var'))||(isempty(patch_sz))||(max(patch_sz(:))==1)
     % use the whole optical field directly
     if nk>1  % detrend data
         Ydt = detrend_data(obj.reshape(double(Y), 1), nk, detrend_method); % detrend data
-        [results, center, Cn, PNR] = greedyROI_endoscope(Ydt, K, options, debug_on, save_avi);
+        if isequal(options.init_method,'max')
+            [results, center, Cn, PNR] = greedyMax_endoscope(Ydt, K, options, debug_on, save_avi);
+        else
+            [results, center, Cn, PNR] = greedyROI_endoscope(Ydt, K, options, debug_on, save_avi);
+        end
     else    % without detrending
-        [results, center, Cn, PNR] = greedyROI_endoscope(Y, K, options, debug_on, save_avi);
+        if isequal(options.init_method,'max')
+            [results, center, Cn, PNR] = greedyMax_endoscope(Y, K, options, debug_on, save_avi);
+        else
+            [results, center, Cn, PNR] = greedyROI_endoscope(Y, K, options, debug_on, save_avi);
+        end
     end
     obj.A = results.Ain;
     obj.C = results.Cin;

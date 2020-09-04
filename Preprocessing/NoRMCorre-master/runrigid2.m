@@ -17,18 +17,22 @@ end
 gcp;
 
 %addpath(genpath('../../NoRMCorre'));
-[path,name,ext]=fileparts(file);
-if ischar(file)&isequal(ext,'.mat')
-    Yf = struct2cell(load(file));
-    Yf = single(Yf{1});
-elseif ischar(file)&isequal(ext,'.avi')
-    v=VideoReader(file);
-    Yf=read(v);
-    Yf=single(Yf);
-elseif ischar(file)&(isequal(ext,'.tif')||isequal(ext,'.tiff'))
-    Yf=loadtiff(file);
+from_file=true;
+if ischar(file)
+    [path,name,ext]=fileparts(file);
+    if isequal(ext,'.mat')
+        Yf = struct2cell(load(file));
+        Yf = single(Yf{1});
+    elseif isequal(ext,'.avi')
+        v=VideoReader(file);
+        Yf=read(v);
+        Yf=single(Yf);
+    elseif (isequal(ext,'.tif')||isequal(ext,'.tiff'))
+        Yf=loadtiff(file);
+    end
 else
     Yf=single(file);
+    from_file=false;
 end
 
 if length(size(Yf))==4
@@ -38,26 +42,28 @@ end
 
 %% perform some sort of deblurring/high pass filtering
 
-if (0)    
-    hLarge = fspecial('average', 40);
-    hSmall = fspecial('average', 2); 
-    for t = 1:T
-        Y(:,:,t) = filter2(hSmall,Yf(:,:,t)) - filter2(hLarge, Yf(:,:,t));
-    end
-    %Ypc = Yf - Y;
-    bound = size(hLarge,1);
-else
-    gSig = 3; %%original 7
-    gSiz = 7; %%original 17
-    psf = fspecial('gaussian', round(gSiz), gSig);
-    ind_nonzero = (psf(:)>=max(psf(:,1)));
-    psf = psf-mean(psf(ind_nonzero));
-    psf(~ind_nonzero) = 0;   % only use pixels within the center disk
-    %Y = imfilter(Yf,psf,'same');
-    %bound = 2*ceil(gSiz/2);
-    Y = imfilter(Yf,psf,'symmetric');
-    bound = 50;
-end
+% if (0)    
+%     hLarge = fspecial('average', 40);
+%     hSmall = fspecial('average', 2); 
+%     for t = 1:T
+%         Y(:,:,t) = filter2(hSmall,Yf(:,:,t)) - filter2(hLarge, Yf(:,:,t));
+%     end
+%     %Ypc = Yf - Y;
+%     bound = size(hLarge,1);
+% else
+%     gSig = 3; %%original 7
+%     gSiz = 7; %%original 17
+%     psf = fspecial('gaussian', round(gSiz), gSig);
+%     ind_nonzero = (psf(:)>=max(psf(:,1)));
+%     psf = psf-mean(psf(ind_nonzero));
+%     psf(~ind_nonzero) = 0;   % only use pixels within the center disk
+%     %Y = imfilter(Yf,psf,'same');
+%     %bound = 2*ceil(gSiz/2);
+%     Y = imfilter(Yf,psf,'symmetric');
+%     bound = 50;
+% end
+bound=0;
+Y=Yf;
 %% first try out rigid motion correction
     % exclude boundaries due to high pass filtering effects
 options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',40,'max_shift',8,'iter',2,'correct_bidir',false);
@@ -78,9 +84,11 @@ tic; Mr = apply_shifts(Yf,shifts1,options_r,bound/2,bound/2); toc % apply shifts
 %% save video as .mat file
 if conv_uint8
     Y=uint8(Mr);
+else
+    Y=Mr;
 end
 Ysiz=size(Y);
-if save_file
+if save_file & from_file
 mkdir motion_corrected
 [path,name,ext]=fileparts(file);
 if ~isempty(path)

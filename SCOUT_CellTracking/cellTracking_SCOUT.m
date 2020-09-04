@@ -22,8 +22,9 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 %  registration_type: (str) 'align_to_base' or 'consecutive', Determines if
 %       sessions are registered to base session, or registered
 %       consecutively.
-%  registration_method: (str) 'affine' or 'non-rigid', method for session
-%       registration
+%  registration_method: (str, or cell of strings) 'translation', 'similarity','affine' or 'non-rigid', method for session
+%       registration. If given a cell of strings, registrations will be
+%       performed consecutively
 %  registration_template: (str) Use spatial positions of neurons 'spatial', or
 %       correlation map 'correlation' for registration
 %  use_corr: (boolean) indicating whether to use correlation cell registration
@@ -55,11 +56,13 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 %  cell_register: (matrix) Registration Indices Per Session for each identified cell
 %  
 
+
 %% Assign variables
+
 optional_parameters={'links','weights','max_dist','overlap','chain_prob','corr_thresh','register_sessions','registration_type','registration_method',...
     'registration_template','use_corr','use_spat','max_gap','probability_assignment_method','base','min_prob','binary_corr','max_sess_dist',...
     'footprint_threshold','cell_tracking_options','single_corr'};
-defaults={{},[4,5,5,0,0,0],45,[],.5,.6,true,'align-to-base','non-rigid','spatial',false,true,0,'Kmeans',ceil(length(neurons)/2),.5,false,20,.1,struct,false};
+defaults={{},[4,5,5,0,0,0],45,[],.5,.7,true,'align_to_base',{'affine','non-rigid'},'spatial',false,true,0,'Kmeans',ceil(length(neurons)/2),.5,false,20,.1,struct,false};
 
 p=inputParser;
 
@@ -165,12 +168,11 @@ end
 
 %% Register Sessions (Global)
 
-
 if register_sessions
    %3 alignment iterations
-   for k=1
+   for k=1:2
         [neurons,links]=register_neurons_links(neurons,links,registration_template,registration_type,registration_method,base);
-        %base=randi([1,length(neurons)],1,1);
+        base=randi([1,length(neurons)],1,1);
    end
 end
 for i=1:length(neurons)

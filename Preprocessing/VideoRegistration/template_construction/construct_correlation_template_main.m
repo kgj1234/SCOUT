@@ -13,11 +13,13 @@ for i=1:length(vid_files)
     end
 end
 del_ind=find(del_ind);
+vids=vid_files;
 vids_lower=lower(vid_files);
 
-vids=vids_lower;
+
 vids(del_ind)=[];
-[~,ind]=sort(vids);
+vids_lower(del_ind)=[];
+[~,ind]=sort_nat(vids_lower);
 vids=vids(ind);
 
 for i=1:length(vids)

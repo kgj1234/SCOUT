@@ -48,7 +48,7 @@ JS_thresh=spatial_filter_options.JS;
 trim=spatial_filter_options.trim;
 filter=spatial_filter_options.filter;
 
-
+raw_neuron=neuron.copy();
 
 JS=[];
 for i=1:size(neuron.A,2);

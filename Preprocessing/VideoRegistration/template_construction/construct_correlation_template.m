@@ -1,12 +1,4 @@
 function Cn=construct_correlation_template(filename,indices,KL,min_pnr,KL_constraint,gSiz,data_type)
-%vid_file: (m x n x num_frames) matrix containing video data
-
-% indices: specify frame indices you wish to perform extraction on, leave as [] for all frames
-
-% KL constraint: percentile, between 0 and 1. Anything outside the
-% percentile range will be eliminated
-% min_pnr: min allowable peak-to-noise ratio. smaller values pick up more neurons, but cause more false positives. typical values, (5:15)
-
 
 
 
@@ -117,8 +109,8 @@ neuron_full.updateParams('min_corr', min_corr, 'min_pnr', min_pnr, ...
 neuron.options.nk = 1;  % number of knots for detrending 
 
 %Add noise to correlation image? (If so, reduce min_corr threshold)
-neuron_full.options.add_noise=true;
-neuron.options.add_noise=true;
+neuron_full.options.add_noise=.005;
+neuron.options.add_noise=.0005;
 
 if isequal(data_type,'2p')
     

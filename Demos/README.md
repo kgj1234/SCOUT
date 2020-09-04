@@ -15,10 +15,9 @@ Session_Registration_Demo.m: This demonstrates session registration as a preproc
 
 extraction_1p_demo.m: Demonstrates code for 1-photon recording extraction. The output is neuron (Sources2D object)
 
-extraction_2p_demo.m: (This does not have a spatial filter yet)
+extraction_2p_demo.m: Demonstrates code for 1-photon extraction. No spatial filter available at present.
 
 extraction_wrapper_demo.m: Demonstrates the extraction wrapper, which allows specification of fewer variables, and is easy to use. Output is neuron (Sources2D object)
-
 
 Cell_Tracking_Demo.m: Demonstrates cell tracking on recordings in the current directory. Saves neuron (Sources2D) object containing neural tracking data, as SCOUT_neuron.mat in the extraction folder.
 
@@ -26,7 +25,7 @@ Cell_Extraction_Tracking_Demo.m: Demonstrates combined cell extraction followed 
 
 full_pipeline_demo.m: Demonstrates full data processing pipeline (excluding interactive session registration). Saves neuron (Sources2D) object containing neural tracking data as SCOUT_neuron.mat in the extraction folder.
 
-
+background_subtraction_demo.m: Demonstrates background subtraction.
 
 
 

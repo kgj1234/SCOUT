@@ -53,18 +53,23 @@ or lower the initialization parameters if too few neurons are initialized. Both 
 2. What if I am tracking too few neurons? Check the automated post processing session alignment, or turn it off altogether. 
 Lower min_prob or chain_prob parameters. Try increasing the session overlap. These parameters can be controlled with cell_tracking_options.
 
+## Background Subtraction
+CNMF-E automatically incorporates background subtraction. However, in some instances, it may be necesary to use a more robust method. We have included background subtraction from min1pipe as an optional pre-processing step.
+
+## Reference
+Please cite
+
+Johnston, K., Grieco, S., Yu, Z., Jin, S., Shen, T., Crary, R., Guzowski, J., Holmes, T., Nie, Q., Xu, X. (2020) Robust Population Single Neuronal Calcium Signal Extraction Using SCOUT Allows for Longitudinal Analysis of Behavior-associated Neural Ensemble Dynamics. BioRxiv
+
+Zhou, P., Resendez, S.L., Rodriguez-Romaguera, J., Jimenez, J.C, Neufeld, S.Q., Giovannucci, A., Friedrich, J., Pnevmatikakis, E.A., Stuber, Garret D , Stuber, G.D., Hen, R., Kheirbek, M.A., Sabatini, B.L., Kass, R.E., Paninski, L. (2018). Efficient and accurate extraction of in vivo calcium signals from microendoscopic video data. eLife, pp.e28728. 
+
+If using min1pipe background subtraction, please cite
+
+Lu, J., Li, C., Singh-Alvarado, J., Zhou, Z., Fröhlich, F., Mooney, R., & Wang, F. (2018). MIN1PIPE: A Miniscope 1-photon-based Calcium Imaging Signal Extraction Pipeline. Cell Reports. pp3673-3684
 
 
-
-
-
-
-
-
-
-
-
-
+## HPC
+HPC code is available for Son of Grid Engine (SGE). This has not been fully tested. Some dependencies may be missing.
 
 
 

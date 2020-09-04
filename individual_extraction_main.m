@@ -29,37 +29,58 @@ function neuron=individual_extraction_main(filename,gSiz,data_type,max_neurons,m
 
 %Parameter setting
 if exist('JS','var')
+    if ischar(JS)
+        JS=str2num(JS);
+    end
     extraction_options.JS=JS;
 else
     extraction_options.JS=0;
 end
 if exist('gSiz','var')
+    if ischar(gSiz)
+        gSiz=str2num(gSiz);
+    end
     extraction_options.gSiz=gSiz;
 else
     extraction_options.gSiz=25;
 end
 if exist('corr_noise','var')
+    if ischar(corr_noise)
+        corr_noise=str2num(corr_noise);
+    end
     extraction_options.corr_noise=corr_noise;
 else
     extraction_options.corr_noise=false;
 end
 if exist('min_corr','var')
+    if ischar(min_corr)
+        min_corr=str2num(min_corr);
+    end
     extraction_options.min_corr=min_corr;
 else
     extraction_options.min_corr=.8;
 end
 
 if exist('max_neurons','var')
+    if ischar(max_neurons)
+        max_neurons=str2num(max_neurons);
+    end
     extraction_options.max_neurons=max_neurons;
 else
     extraction_options.max_neurons=[];
 end
 if exist('indices','var')
+    if ischar(indices)
+        indices=str2num(indices);
+    end
     extraction_options.indices=indices;
 else
     extraction_options.indices=[];
 end
 if exist('min_pnr','var')
+    if ischar(min_pnr)
+        min_pnr=str2num(min_pnr);
+    end
     extraction_options.min_pnr=min_pnr;
 else
     extraction_options.min_pnr=5;

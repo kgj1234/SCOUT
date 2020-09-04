@@ -5,7 +5,7 @@ function M_final = apply_shifts(Y,shifts,options,td1,td2,td3,col_shift)
 % INPUTS
 % Y:                Input data, can be already loaded in memory as a 3D
 %                   tensor, a memory mapped file, or a pointer to a tiff stack
-% shifts:           calculated shifts
+% shifts:           calculatedf shifts
 % options:          options structure for motion correction 
 % td1,td2,td3:      extend patches on the boundaries by that much        
 

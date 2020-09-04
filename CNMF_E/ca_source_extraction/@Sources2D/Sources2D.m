@@ -65,6 +65,7 @@ classdef Sources2D < handle
         PNR;
         
         
+        
     end
     
     %% methods
@@ -1131,8 +1132,11 @@ classdef Sources2D < handle
             [~, ~, file_type] = fileparts(nam);
             if strcmpi(file_type, '.mat')
                 data = matfile(nam);
-              
-                    Ysiz = data.Ysiz;
+                    if isempty(who(data,'Ysiz'))
+                        Ysiz=size(data,'Y');
+                    else
+                        Ysiz = data.Ysiz;
+                    end
                     numFrame = Ysiz(3);
                     img = data.Y(:, :, 1);
                 

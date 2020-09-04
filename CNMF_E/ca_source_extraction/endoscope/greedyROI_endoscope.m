@@ -131,6 +131,7 @@ HY = bsxfun(@minus, HY, median(HY, 2));
 HY_max = max(HY, [], 2);
 Ysig = GetSn(HY);
 PNR = reshape(HY_max./Ysig, d1, d2);
+%PNR=reshape(HY_max,d1,d2);
 PNR0 = PNR;
 PNR(PNR<min_pnr) = 0;
 
@@ -142,8 +143,8 @@ HY_thr = HY;
 HY_thr(bsxfun(@lt, HY_thr, Ysig*sig)) = 0;
 
 % compute loal correlation
-if isfield(options,'add_noise')&options.add_noise
-    Cn=correlation_image(HY_thr,[1,2],d1,d2,[],[],true);
+if isfield(options,'add_noise')&(options.add_noise | options.add_noise>0)
+    Cn=correlation_image(HY_thr,[1,2],d1,d2,[],[],options.add_noise);
 else
     Cn = correlation_image(HY_thr, [1,2], d1,d2);
 end
@@ -152,8 +153,7 @@ Cn(isnan(Cn)) = 0;
 % Cn = Cn + randn(size(Cn))*(1e-100);
 
 % screen seeding pixels as center of the neuron
-v_search = Cn.*PNR;
-v_search(or(Cn<min_corr, PNR<min_pnr)) = 0;
+v_search = Cn.*PNR;v_search(or(Cn<min_corr, PNR<min_pnr)) = 0;
 ind_search = false(d1*d2,1);  % showing whether this pixel has been searched before
 ind_search(v_search==0) = true; % ignore pixels with small correlations or low peak-noise-ratio
 

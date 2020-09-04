@@ -18,6 +18,7 @@ else
     base_template=max(reshape(neurons{base}.A,neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
 end
 templates{base}=base_template;
+total_comp=0;
 if isequal(registration_type,'align_to_base')
     for i=[1:base-1,base+1:length(neurons)]
         if isequal(registration_template,'correlation')
@@ -33,7 +34,8 @@ if isequal(registration_type,'align_to_base')
             warning('Registration Failed')
         end
         %    neurons{i}=thresholdNeuron(neurons{i},.3);
-        display_progress_bar(i/length(neurons)*100,false);
+        total_comp=total_comp+1;
+        display_progress_bar(total_comp/(length(neurons)-1)*100,false);
     end
 else
     total=1;
@@ -41,11 +43,11 @@ else
     for i=base+1:length(neurons)
         if isequal(registration_template,'correlation')
             template_curr=neurons{i}.Cn;
-            template_curr(template_curr<.9)=0;
+            template_curr(template_curr<.08)=0;
             template_curr_norm=template_curr;
             
             template_prev=neurons{i-1}.Cn;
-            template_prev(template_prev<.9)=0;
+            template_prev(template_prev<.08)=0;
             template_prev_norm=template_prev;
         else
             template_curr=max(reshape(neurons{i}.A,neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
@@ -58,16 +60,18 @@ else
         if mse>reg_thresh
             warning('Registration Failed')
         end
+        total=total+1;
+        display_progress_bar(total/(length(neurons)-1)*100,false);
     end
     
     for i=base-1:-1:1
         if isequal(registration_template,'correlation')
             template_curr=neurons{i}.Cn;
-            template_curr(template_curr<.9)=0;
+            template_curr(template_curr<.08)=0;
             template_curr_norm=template_curr;
             
             template_prev=neurons{i+1}.Cn;
-            template_prev(template_prev<.9)=0;
+            template_prev(template_prev<.08)=0;
             template_prev_norm=template_prev;
         else
             template_curr_norm=max(reshape(neurons{i}.A./max(neurons{i}.A,[],1),neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
@@ -84,7 +88,7 @@ else
         end
        total=total+1;
        
-        display_progress_bar(total/length(neurons)*100,false);
+        display_progress_bar(total/(length(neurons)-1)*100,false);
     end
 end
 
@@ -103,11 +107,11 @@ if ~isempty(links)
         for i=1:length(links)
             if isequal(registration_template,'correlation')
                 template_curr=links{i}.Cn;
-                template_curr(template_curr<.9)=0;
+                template_curr(template_curr<.08)=0;
                 template_curr_norm=template_curr;
                 
                 template_prev=neurons{i}.Cn;
-                template_prev(template_prev<.9)=0;
+                template_prev(template_prev<.08)=0;
                 template_prev_norm=template_prev;
             else
                 template_curr_norm=max(reshape(links{i}.A./max(links{i}.A,[],1),links{1}.imageSize(1),links{1}.imageSize(2),[]),[],3);
@@ -124,7 +128,7 @@ if ~isempty(links)
             end
      
             total=total+1;
-            display_progress_bar(total/length(links)*100,false);
+            display_progress_bar(total/(length(links))*100,false);
         end
         
     end

@@ -1,4 +1,4 @@
-function video_registration_main(use_non_rigid,base_index,projection_type,automatic,projection_paths,data_type)
+function video_registration_main(use_non_rigid,base_index,projection_type,automatic,projection_dir,data_type)
 %Modifies vid_files listed in current folder to match the file at index base_index in vid_path
 
 %For example, use this code to consecutively align videos in a folder, or align all videos to a baseline.
@@ -40,7 +40,10 @@ end
 if ~exist('data_type','var')||isempty(data_type)
     data_type='1p';
 end
-
+registration_methods={'translation','rigid','similarity','affine'};
+if use_non_rigid
+    registration_methods{end+1}='non-rigid';
+end
 
 vid_paths=dir;
 
@@ -72,30 +75,39 @@ for i=1:length(vid_paths)
 end
 
 %Load projections if available
-if ~exist('projection_paths','var')||isempty(projection_paths)
+if ~exist('projection_dir','var')||isempty(projection_dir)
     projections={};
 else
-    for i=1:length(projection_paths)
-        projection_paths=dir(projection_paths);
-        projection_paths=projection_paths.name;
+        projection_paths=dir(projection_dir);
+        projection_paths={projection_paths.name};
+        proj_lower=lower(projection_paths);
+        [~,ind]=sort_nat(proj_lower);
+        projection_paths=projection_paths(ind);
+        
+        
         projections={};
         for k=1:length(projection_paths)
             [path,name,ext]=fileparts(projection_paths{k});
-            if isequal(ext,'.mat')
+            path=projection_dir;
+            if isequal(ext,'.mat')&~isequal(projection_paths{k},'.dir.mat')
                 try
-                    project=struct2cell(load(projection_paths{k}));
+                    project=struct2cell(load(fullfile(path,projection_paths{k})));
                     projections{end+1}=project{1};
                 end
             end
         end
        
-    end
+    
     if length(projections)~=length(vids)
         projections={};
     end
 end
 if length(projections)==0
     if isequal(projection_type,'max')
+        
+        vids_lower=lower(vid_paths);
+        [~,ind]=sort_nat(vids_lower);
+        vid_paths=vid_paths(ind);
         for i=1:length(vid_paths)
             
             [Ydt, ~,~] = detrend_data(reshape(double(vids{i}),[],size(vids{i},3)),4);
@@ -168,27 +180,7 @@ while  nonempty<length(vid_paths)
 %         fixed_proj(fixed_proj<.08)=0;
 %         moving_proj(moving_proj<.08)=0;
 %     end
-    try
-        R=imref2d(size(fixed_proj));
-        [optimizer, metric] = imregconfig('multimodal');
-        tform=imregtform(moving_proj,fixed_proj,'translation',optimizer,metric);
-        moving_reg=imwarp(moving_proj,tform,'OutputView',R);
-        tform1=imregtform(moving_reg,fixed_proj,'affine',optimizer,metric);
-        moving_reg1=imwarp(moving_reg,tform1,'OutputView',R);
-        
-    catch
-        registration=registration2d(fixed_proj,moving_proj,'transformationModel','translation');
-        moving_reg=registration.deformed;
-        registration1=registration2d(fixed_proj,moving_reg,'transformationModel','affine');
-        moving_reg1=registration1.deformed;
-    end
-    if use_non_rigid
-        registration2=registration2d(fixed_proj,moving_reg1,'transformationModel','non-rigid');
-        moving_reg_nonrigid=registration2.deformed;
-        moving_proj_temp=moving_reg_nonrigid;
-    else
-        moving_proj_temp=moving_reg1;
-    end
+    [moving_proj_temp,registrations]=register_projections(moving_proj,fixed_proj,registration_methods);
     
    
     
@@ -208,9 +200,9 @@ while  nonempty<length(vid_paths)
     else
         keep=input('Is registration acceptable? y/n/m ','s');
     end
- 
+    iter=1;
     while isequal(keep,'m')
-        
+        registrations={};
        
         [fixed_mask,moving_mask]=manual_ROI_selection(fixed_proj,moving_proj);
         for i=1:length(fixed_mask)
@@ -223,27 +215,20 @@ while  nonempty<length(vid_paths)
         diff=mean(diff,1);
         
         moving_proj_new=imtranslate(moving_proj,-1*diff);
-         try
-            R=imref2d(size(fixed_proj));
-            [optimizer, metric] = imregconfig('multimodal');
-            tform=imregtform(moving_proj_new,fixed_proj,'translation',optimizer,metric);
-            moving_reg=imwarp(moving_proj_new,tform,'OutputView',R);
-            tform1=imregtform(moving_reg,fixed_proj,'affine',optimizer,metric);
-            moving_reg1=imwarp(moving_reg,tform1,'OutputView',R);
-
-        catch
-            registration=registration2d(fixed_proj,moving_proj_new,'transformationModel','translation');
-            moving_reg=registration.deformed;
-            registration1=registration2d(fixed_proj,moving_reg,'transformationModel','affine');
-            moving_reg1=registration1.deformed;
-        end
-        if use_non_rigid
-            registration2=registration2d(fixed_proj,moving_reg1,'transformationModel','non-rigid');
-            moving_reg_nonrigid=registration2.deformed;
-            moving_proj_temp=moving_reg_nonrigid;
+        reg1=affine2d;
+        reg1.T=[1,0,0;0,1,0;-1*diff(1),-1*diff(2),1];
+        reg1={reg1};
+        
+        if iter==1
+            [moving_proj_temp,registrations]=register_projections(moving_proj_new,fixed_proj,registration_methods);
         else
-            moving_proj_temp=moving_reg1;
+            moving_proj_temp=moving_proj_new;
+            registrations={};
         end
+        for k=1:length(registrations)
+            reg1{end+1}=registrations{k};
+        end
+        registrations=reg1;
    
         
         figure('name','moving','Position', [10 10 200 200])
@@ -255,41 +240,26 @@ while  nonempty<length(vid_paths)
         colormap gray
         daspect([1,1,1])
         keep=input('Is registration acceptable? y/n/m ','s');
+        iter=iter+1;
     end
     
     
     
     
     
-    if isequal(lower(keep),'y')
-        if exist('diff','var');
-            parfor k=1:size(moving,3);
-                moving(:,:,k)=imtranslate(moving(:,:,k),-1*diff);
+     if isequal(lower(keep),'y')
+        R=imref2d(size(fixed_proj));
+        parfor k=1:size(moving,3)
+            for p=1:length(registrations)
+                if isequal(class(registrations{p}),'affine2d')
+                    moving(:,:,k)=imwarp(double(moving(:,:,k)),registrations{p},'OutputView',R);
+                else
+                    moving(:,:,k)=deformation(double(moving(:,:,k)),...
+                        registrations{p}.displacementField,registrations{p}.interpolation);
+                end
             end
-            clear diff
         end
-        
-        
-            if exist('tform','var')
-                parfor k=1:size(moving,3)
-                    moving(:,:,k)=imwarp(moving(:,:,k),tform,'OutputView',R);
-                    moving(:,:,k)=imwarp(moving(:,:,k),tform1,'OutputView',R);
-                end
-            else
-                parfor k=1:size(moving,3)
-                moving(:,:,k) = deformation(double(moving(:,:,k)),...
-                registration.displacementField,registration.interpolation);
-                moving(:,:,k) = deformation(double(moving(:,:,k)),...
-                registration1.displacementField,registration1.interpolation);
-                end
-            end
-            if use_non_rigid
-                parfor k=1:size(moving,3)
-                moving(:,:,k)=deformation(double(moving(:,:,k)),...
-                registration2.displacementField,registration2.interpolation);
-                end
-            end
-        
+    
         moving=uint8(moving);
         projections{alter_selection}=moving_proj_temp;
   
@@ -311,10 +281,7 @@ while  nonempty<length(vid_paths)
                 [path,name,ext]=fileparts(vid_paths{i});
                 %name=[name,'_registered'];
                 save(fullfile(path,name),'Y','Ysiz','-v7.3');
-                try
-                template=projections{i};
-                save(projection_paths{i},'template')
-                end
+                
                 saved_files{i}=vid_paths{i};
             end
         end
@@ -343,12 +310,6 @@ for i=1:length(aligned)
     %name=[name,'_registered'];
     save(fullfile(path,name),'Y','Ysiz','-v7.3');
     saved_files{i}=vid_paths{i};
-end
-try
-for i=1:length(aligned)
-    template=projections{i};
-    save(projection_paths{i},'template')
-end
 end
 
 

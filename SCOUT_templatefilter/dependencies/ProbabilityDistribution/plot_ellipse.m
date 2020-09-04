@@ -19,7 +19,7 @@ function A=plot_ellipse(xwidth,ywidth,modelfun,beta,angle,centroid,data_shape)
 
 
 rad=max(xwidth,ywidth);
-max_reg_deg=round(rad^2);
+max_reg_deg=ceil(rad+2)^2;
 
 [t,r] = meshgrid(linspace(0,2*pi,max_reg_deg),linspace(0,max(xwidth,ywidth),ceil(2*max(xwidth,ywidth))));
 

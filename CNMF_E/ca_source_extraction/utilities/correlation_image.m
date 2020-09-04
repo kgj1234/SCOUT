@@ -26,15 +26,20 @@ end
 if ~exist('add_noise','var')||isempty(add_noise)
     add_noise=false;
 end
+if exist('add_noise','var')&isequal(class(add_noise),'logical')&add_noise==true
+    add_noise=.0005;
+end
 if ~exist('sz', 'var') || isempty(sz)
     sz = [0,1,0; 1,0,1; 0,1,0];
 end
 
+
+
 % center data 
 Y=Y/max(max(max(Y)));
 %Add a little noise to prevent spurious correlations
-if add_noise
-    Y=imnoise(Y,'gaussian',0,.005);
+if add_noise>0
+    Y=imnoise(Y,'gaussian',0,add_noise);
 end
 
 Y = bsxfun(@minus, double(Y), mean(Y, ndims(Y))); 

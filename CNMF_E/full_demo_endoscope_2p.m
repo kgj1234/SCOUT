@@ -3,19 +3,19 @@ function full_neuron=full_demo_endoscope_2p(filename,extraction_options)
 % Inputs
 
 % filename: filepath for recording to be extracted (you can also submit the video itself)
-% extraction_options: structure with following possible fields. 
-    %indices: ([int1, int2]) specified index range for extraction (use [] for all indices)
-    %JS: (non-negative float) Setting to 0 gives CNMF-E, otherwise, this
-        %sets the spatial filter threshold.
-    %min_pnr: (postive float) minimum peak-to-noise ratio for neuron initialization
-    %gSiz: (float) maximum neuron width in image plane
-    %max_neurons: (int) maximum number of detected neurons
-    %min_corr: (float between 0 and 1) sets min correlation threshold for
-        %neuron initialization
-    %corr_noise: (bool) true: add noise when calculating correlation image.
-        %Typically requires a low min_corr parameter, but reduces noise.
-    %merge_thr (3 element vector) indicate threshold for merging 
-        
+% extraction_options: structure with following possible fields.
+%indices: ([int1, int2]) specified index range for extraction (use [] for all indices)
+%JS: (non-negative float) Setting to 0 gives CNMF-E, otherwise, this
+%sets the spatial filter threshold.
+%min_pnr: (postive float) minimum peak-to-noise ratio for neuron initialization
+%gSiz: (float) maximum neuron width in image plane
+%max_neurons: (int) maximum number of detected neurons
+%min_corr: (float between 0 and 1) sets min correlation threshold for
+%neuron initialization
+%corr_noise: (bool) true: add noise when calculating correlation image.
+%Typically requires a low min_corr parameter, but reduces noise.
+%merge_thr (3 element vector) indicate threshold for merging
+%res_extract (bool) indicate whether to extract neurons from residual
 %Outputs
 
 % full_neuron: (Sources2D) extracted neural data
@@ -36,7 +36,7 @@ ssub=2;
 tsub=2;
 
 if ~isfield(extraction_options,'JS')||isempty(extraction_options.JS)
-   JS=0;
+    JS=0;
 else
     JS=extraction_options.JS;
 end
@@ -44,6 +44,11 @@ if ~isfield(extraction_options,'indices')
     indices=[];
 else
     indices=extraction_options.indices;
+end
+if ~isfield(extraction_options,'res_extract')
+    res_extract=true;
+else
+    res_extract=extraction_options.res_extract;
 end
 
 %% select data and map it to the RAM
@@ -57,16 +62,16 @@ if ischar(filename)
         filename=[filename,'.mat'];
     end
     nam = filename;
-
+    
     cnmfe_choose_data;
 else
     Y=filename;
 end
 %% create Source2D class object for storing results and parameters
 Fs = 15;             % frame rate
-        % spatial downsampling factor
-         % temporal downsampling factor
-gSig = 3;           % width of the gaussian kernel, which can approximates the average neuron shape
+% spatial downsampling factor
+% temporal downsampling factor
+gSig = 2;           % width of the gaussian kernel, which can approximates the average neuron shape
 if ~isfield(extraction_options,'gSiz')||isempty(extraction_options)
     gSiz = 24;          % maximum diameter of neurons in the image plane. larger values are preferred.
 else
@@ -74,7 +79,7 @@ else
     
 end
 gSiz=gSiz/2;
-gSizMin=7;   
+gSizMin=7;
 gSizMin=gSizMin/2;
 
 % minimum diameter of neurons in the image plane.
@@ -87,11 +92,11 @@ neuron_full.Fs = Fs;         % frame rate
 
 spatial_constraints=struct('connected',true,'circular',false);
 
-% with dendrites or not 
+% with dendrites or not
 with_dendrites = false;
 if with_dendrites
     % determine the search locations by dilating the current neuron shapes
-    neuron_full.options.search_method = 'dilate'; 
+    neuron_full.options.search_method = 'dilate';
     neuron_full.options.bSiz = 20;
 else
     % determine the search locations by selecting a round area
@@ -109,14 +114,14 @@ end
 dmin =[1,15];
 
 %Background Options
-bg_model = 'svd';  % model of the background {'ring', 'svd'(default), 'nmf'}
+bg_model = 'ring';  % model of the background {'ring', 'svd'(default), 'nmf'}
 nb = 1;             % number of background sources for each patch (only be used in SVD and NMF model)
-bg_neuron_factor = 0.5;  
-ring_radius = round(bg_neuron_factor * gSiz);  % when the ring model used, it is the radius of the ring used in the background model. 
-                    %otherwise, it's just the width of the overlapping area 
+bg_neuron_factor = 0.5;
+ring_radius = round(bg_neuron_factor * gSiz);  % when the ring model used, it is the radius of the ring used in the background model.
+%otherwise, it's just the width of the overlapping area
 %dmin=2.5;
-%% options for running deconvolution 
-neuron_full.options.deconv_flag = true; 
+%% options for running deconvolution
+neuron_full.options.deconv_flag = true;
 neuron_full.options.deconv_options = struct('type', 'ar1', ... % model of the calcium traces. {'ar1', 'ar2'}
     'method', 'foopsi', ... % method for running deconvolution {'foopsi', 'constrained', 'thresholded'}
     'smin', -5, ...         % minimum spike size. When the value is negative, the actual threshold is abs(smin)*noise level
@@ -128,11 +133,11 @@ neuron_full.options.deconv_options = struct('type', 'ar1', ... % model of the ca
 if isfield(extraction_options,'indices')&~isempty(extraction_options.indices)
     sframe=indices(1);						% user input: first frame to read (optional, default:1)
     num2read= indices(2)-indices(1);             % user input: how many frames to read   (optional, default: until the end)
-
+    
 else
     sframe=1;
     try
-    num2read=Ysiz(3);
+        num2read=Ysiz(3);
     catch
         num2read=size(Y,3);
     end
@@ -149,13 +154,13 @@ Y = neuron.reshape(Y, 1);       % convert a 3D video into a 2D matrix
 
 %% compute correlation image and peak-to-noise ratio image.
 %cnmfe_show_corr_pnr;    % this step is not necessary, but it can give you some...
-                        % hints on parameter selection, e.g., min_corr & min_pnr
+% hints on parameter selection, e.g., min_corr & min_pnr
 
 %% initialization of A, C
 % parameters
-debug_on = false;   % visualize the initialization procedue. 
-save_avi = false;   %save the initialization procedure as an avi movie. 
-patch_par = [1,1]*1; %1;  % divide the optical field into m X n patches and do initialization patch by patch. It can be used when the data is too large 
+debug_on = false;   % visualize the initialization procedue.
+save_avi = false;   %save the initialization procedure as an avi movie.
+patch_par = [1,1]*1; %1;  % divide the optical field into m X n patches and do initialization patch by patch. It can be used when the data is too large
 if ~isfield(extraction_options,'max_neurons')
     K = []; % maximum number of neurons to search within each patch. you can use [] to search the number automatically
 else
@@ -179,8 +184,8 @@ neuron.updateParams('min_corr', min_corr, 'min_pnr', min_pnr, ...
 neuron_full.updateParams('min_corr', min_corr, 'min_pnr', min_pnr, ...
     'min_pixel', min_pixel, 'bd', bd,'ring_radius',ring_radius,'spatial_constraints',spatial_constraints,...
     'background_model',bg_model,'ring_radius',ring_radius,'center_psf',false);
-neuron.options.nk = 5;  % number of knots for detrending 
-
+neuron.options.nk = 5;  % number of knots for detrending
+neuron.options.init_method='min_corr';
 
 % greedy method for initialization
 
@@ -220,8 +225,8 @@ spatial_filter_options.method='elliptical';
 tic;
 
 [center,Cn,pnr]=neuron.initComponents_endoscope(Y, K, patch_par, debug_on, save_avi);
-           
-         
+
+
 
 fprintf('Time cost in initializing neurons:     %.2f seconds\n', toc);
 
@@ -248,162 +253,154 @@ bg_neuron_ratio = 1.5;  % spatial range / diameter of neurons
 
 % parameters, estimate the spatial components
 update_spatial_method = 'hals';  % the method for updating spatial components {'hals', 'hals_thresh', 'nnls', 'lars'}
-Nspatial = 5;       % this variable has different meanings: 
-                    %1) udpate_spatial_method=='hals' or 'hals_thresh',
-                    %then Nspatial is the maximum iteration 
-                    %2) update_spatial_method== 'nnls', it is the maximum
-                    %number of neurons overlapping at one pixel 
-               
-% parameters for running iteratiosn 
-nC = size(neuron.C, 1);    % number of neurons 
+Nspatial = 5;       % this variable has different meanings:
+%1) udpate_spatial_method=='hals' or 'hals_thresh',
+%then Nspatial is the maximum iteration
+%2) update_spatial_method== 'nnls', it is the maximum
+%number of neurons overlapping at one pixel
 
-maxIter = 1;        % maximum number of iterations 
-miter = 1; 
+% parameters for running iteratiosn
+nC = size(neuron.C, 1);    % number of neurons
+
+maxIter = 1;        % maximum number of iterations
+miter = 1;
 while miter <= maxIter
-       
-
+    
+    
     %% merge neurons
     neuron.remove_false_positives();
     try
-    cnmfe_quick_merge;              % run neuron merges
-      cnmfe_merge_neighbors;          % merge neurons if two neurons' peak pixels are too close 
+        cnmfe_quick_merge;              % run neuron merges
+        cnmfe_merge_neighbors;          % merge neurons if two neurons' peak pixels are too close
     end
-    %% udpate background 
+    %% udpate background
     % estimate the background
     tic;
     cnmfe_update_BG;
     fprintf('Time cost in estimating the background:        %.2f seconds\n', toc);
-       
+    
     % neuron.playMovie(Ysignal); % play the video data after subtracting the background components.
     
     %% update spatial & temporal components
     tic;
     for zz=1:2
-         neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
-         %neuron.compactSpatial();    % run this line if neuron shapes are circular 
-  
+        neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
+        %neuron.compactSpatial();    % run this line if neuron shapes are circular
+        
         %neuron=split_neurons(neuron,[ceil(d1/ssub),ceil(d2/ssub)],dmin,gSizMin);
         neuron.updateSpatial_endoscope(Ysignal, Nspatial, update_spatial_method);
         neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
-        %neuron.compactSpatial();    % run this line if neuron shapes are circular 
-  
-  
+        
+        
         if JS>0&zz>1
-          
-           [~,JS_score]=spatial_filter(neuron,spatial_filter_options);
-         
+            
+            [~,JS_score]=spatial_filter(neuron,spatial_filter_options);
+            
         end
         
-       
+        
         %temporal
         neuron.updateTemporal_endoscope(Ysignal);
         try
-        cnmfe_quick_merge;              % run neuron merges
+            cnmfe_quick_merge;              % run neuron merges
         end
         
-        neuron.remove_false_positives();
+        %        neuron.remove_false_positives();
         try
-        cnmfe_merge_neighbors; 
+            cnmfe_merge_neighbors;
         end
-%         
-       
+        %
+        
     end
-     
-     %neuron=filter_few_spikes(neuron,20,.025);
+    
+    %neuron=filter_few_spikes(neuron,20,.025);
     fprintf('Time cost in updating spatial & temporal components:     %.2f seconds\n', toc);
-       K=200;
-     %% pick neurons from the residual (cell 4).
-     for resiter=1
-
-         
-         
-          
-      if miter==1
-         seed_method = 'auto'; 
-         [center_new, Cn_res, pnr_res] = neuron.pickNeurons(Ysignal - neuron.A*neuron.C, patch_par, seed_method, debug_on,K); % method can be either 'auto' or 'manual'
-     end
-     
-     %if JS>0
-           
-     %       [~,JS_score]=spatial_filter(neuron,JS,[ceil(d1/ssub),ceil(d2/ssub)],JS_constraint,true,gSiz,gSizMin,false,divergence_type);
-         
-     %end
-     disp('num_neurons')
-     size(neuron.C,1)
-     
-     try
-     cnmfe_quick_merge;              % run neuron merges
-    cnmfe_merge_neighbors;          % merge neurons if two neurons' peak pixels are too close 
-     end
-    %% udpate background 
-    % estimate the background
-    tic;
-    
-    % neuron.playMovie(Ysignal); % play the video data after subtracting the background components.
-    
-    %% update spatial & temporal components
-    tic;
-    for zz=1:2
-        
-        
-        cnmfe_update_BG;
-        fprintf('Time cost in estimating the background:        %.2f seconds\n', toc);
-        
-       
-        %temporal
-        try
-        neuron.updateTemporal_endoscope(Ysignal);
+    if res_extract
+        if ~isempty(K)
+            K=K-size(neuron.C,1);
         end
-   
-        try
-        cnmfe_quick_merge;              % run neuron merges
-        end
-        %spatial
-     
-  
-         neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
-        %neuron.compactSpatial();    % run this line if neuron shapes are circular 
-  
-        %neuron=split_neurons(neuron,[ceil(d1/ssub),ceil(d2/ssub)],dmin,gSizMin);
-
-        neuron.updateSpatial_endoscope(Ysignal, Nspatial, update_spatial_method);
-         neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
-        %neuron.compactSpatial();    % run this line if neuron shapes are circular 
-  
-  
-        if JS>0 & zz>1
-           spatial_filter_options.filter=true;
-           [~,JS_score]=spatial_filter(neuron,spatial_filter_options);
-         
-        end
+        %% pick neurons from the residual (cell 4).
+        for resiter=1
+            
+            
+            
+            
+            if miter==1
+                seed_method = 'auto';
+                [center_new, Cn_res, pnr_res] = neuron.pickNeurons(Ysignal - neuron.A*neuron.C, patch_par, seed_method, debug_on,K); % method can be either 'auto' or 'manual'
+            end
+            
+            %if JS>0
+            
+            %       [~,JS_score]=spatial_filter(neuron,JS,[ceil(d1/ssub),ceil(d2/ssub)],JS_constraint,true,gSiz,gSizMin,false,divergence_type);
+            
+            %end
             disp('num_neurons')
-     size(neuron.C,1)
-%         % post process the spatial components (you can run either of these two operations, or both of them)
-             neuron.remove_false_positives();
-        try
-        cnmfe_merge_neighbors; 
+            size(neuron.C,1)
+            
+            try
+                cnmfe_quick_merge;              % run neuron merges
+                cnmfe_merge_neighbors;          % merge neurons if two neurons' peak pixels are too close
+            end
+            %% udpate background
+            % estimate the background
+            tic;
+            
+            %% update spatial & temporal components
+            tic;
+            for zz=1:2
+                
+                
+                cnmfe_update_BG;
+                fprintf('Time cost in estimating the background:        %.2f seconds\n', toc);
+                
+                
+                %temporal
+                try
+                    neuron.updateTemporal_endoscope(Ysignal);
+                end
+                
+                try
+                    cnmfe_quick_merge;              % run neuron merges
+                end
+                %spatial
+                
+                
+                neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
+                
+                %neuron=split_neurons(neuron,[ceil(d1/ssub),ceil(d2/ssub)],dmin,gSizMin);
+                
+                neuron.updateSpatial_endoscope(Ysignal, Nspatial, update_spatial_method);
+                neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
+                
+                if JS>0 & zz>1
+                    spatial_filter_options.filter=true;
+                    [~,JS_score]=spatial_filter(neuron,spatial_filter_options);
+                    
+                end
+                disp('num_neurons')
+                size(neuron.C,1)
+                
+                try
+                    cnmfe_merge_neighbors;
+                end
+                
+            end
+            
         end
-        % stop the iteration when neuron numbers are unchanged. 
-        %if isempty(merged_ROI)
-        %    break;
-        %end
+        
     end
-     
-    neuron.remove_false_positives(); 
-        end
-      %neuron.compactSpatial(); 
-       %neuron.compactSpatial(); 
-       miter=miter+1;
+    miter=miter+1;
 end
-neuron_downsample=neuron.copy();     
+neuron_downsample=neuron.copy();
 if or(ssub>1, tsub>1)
     neuron_ds = neuron.copy();  % save the result
     neuron = neuron_full.copy();
     neuron.imageSize=[d1,d2];
     cnmfe_full;
     neuron_full = neuron.copy();
-end    
-    
+end
+
 %% sort neurons
 [~, srt] = sort(max(neuron.C, [], 2), 'descend'); % C: row is the number of neuron, column is the number of frames
 neuron.orderROIs(srt);
@@ -419,14 +416,14 @@ spatial_filter_options.gSizMin=gSizMin;
 
 %spatial
 neuron.updateSpatial_endoscope(Ysignal, Nspatial, update_spatial_method);
- 
+
 %temporal
 try
-neuron.updateTemporal_endoscope(Ysignal);
+    neuron.updateTemporal_endoscope(Ysignal);
 end
- 
-%% delete some neurons and run CNMF-E iteration 
-neuron.orderROIs('decay_time');  % you can also use {'snr', 'mean', 'decay_time'} 
+
+%% delete some neurons and run CNMF-E iteration
+neuron.orderROIs('decay_time');  % you can also use {'snr', 'mean', 'decay_time'}
 
 tic;
 cnmfe_update_BG;
@@ -435,70 +432,70 @@ fprintf('Time cost in estimating the background:        %.2f seconds\n', toc);
 tic;
 
 for zz=1:2
-     
-        neuron.updateSpatial_endoscope(Ysignal,Nspatial,update_spatial_method);
-      
-         neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
-      %  neuron.compactSpatial();    % run this line if neuron shapes are circular 
-        
-        %This function splits neurons that seem to be improperly merged. It
-        %frequently overestimates the number of neurons needing to be split
-        %neuron=split_neurons(neuron,[d1,d2],dmin,gSizMin);
     
-      
-       if JS>0 & zz>1
-           %Uncomment if neuron removal is not desired at this stage 
-           extraction_options.filter=false;
-           
-           spatial_filter_options.trim=true;
-           spatial_filter_options.data_shape=[neuron_full.options.d1,neuron_full.options.d2];
-           
-            [~,JS_score]=spatial_filter(neuron,spatial_filter_options);
-          
-       end
- 
+    neuron.updateSpatial_endoscope(Ysignal,Nspatial,update_spatial_method);
+    
+    neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
+    %  neuron.compactSpatial();    % run this line if neuron shapes are circular
+    
+    %This function splits neurons that seem to be improperly merged. It
+    %frequently overestimates the number of neurons needing to be split
+    %neuron=split_neurons(neuron,[d1,d2],dmin,gSizMin);
+    
+    
+    if JS>0 & zz>1
+        %Uncomment if neuron removal is not desired at this stage
+        extraction_options.filter=false;
         
+        spatial_filter_options.trim=true;
+        spatial_filter_options.data_shape=[neuron_full.options.d1,neuron_full.options.d2];
+        
+        [~,JS_score]=spatial_filter(neuron,spatial_filter_options);
+        
+    end
+    
+    
     %temporal
-   try
-    neuron.updateTemporal_endoscope(Ysignal);
-    
-   end
-       disp('num_neurons')
-     size(neuron.C,1)
     try
-    cnmfe_quick_merge;              % run neuron merges
+        neuron.updateTemporal_endoscope(Ysignal);
+        
+    end
+    disp('num_neurons')
+    size(neuron.C,1)
+    try
+        cnmfe_quick_merge;              % run neuron merges
     end
     %spatial
-   
-       neuron.remove_false_positives();
+    
+    % neuron.remove_false_positives();
     try
-        cnmfe_merge_neighbors; 
+        cnmfe_merge_neighbors;
     end
-     
-
+    
+    
 end
- 
+
 neuron.updateSpatial_endoscope(Ysignal, Nspatial, update_spatial_method);
 neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
-%neuron.compactSpatial();    % run this line if neuron shapes are circular 
+%neuron.compactSpatial();    % run this line if neuron shapes are circular
 
- 
+
 if JS>0
-         
     
-           [~,JS_score]=spatial_filter(neuron,spatial_filter_options);
-         
+    
+    [~,JS_score]=spatial_filter(neuron,spatial_filter_options);
+    
 end
-        
+
 %neuron.compactSpatial();
 
-neuron.remove_false_positives();
+%neuron.remove_false_positives();
 
 fprintf('Time cost in updating spatial & temporal components:     %.2f seconds\n', toc);
 
-b0 = mean(Y,2)-neuron.A*mean(neuron.C,2); 
-Ybg = bsxfun(@plus, Ybg, b0-mean(Ybg, 2)); 
-neuron.orderROIs('snr'); 
+b0 = mean(Y,2)-neuron.A*mean(neuron.C,2);
+Ybg = bsxfun(@plus, Ybg, b0-mean(Ybg, 2));
+neuron.orderROIs('snr');
 %
 
 figure;
@@ -524,11 +521,12 @@ neuron.centroid = centroid;
 neuron.Cn = Cn;
 [C_df,C_raw_df, Df] = extract_DF_F_endoscope(neuron,Ybg);
 neuron.C_df = C_df;neuron.Df = Df;
+
 neuron=calc_snr(neuron);
 %indices=find(neuron.SNR<1);
 %neuron.delete(indices);
 %neuron=filter_SNR(neuron,.1);
-neuron.trace = neuron.C.*(max(neuron.A)'*ones(1,size(neuron.C,2)));
+neuron.trace = C_raw_df;
 
 close all
 %neuron=threshold_C(neuron);

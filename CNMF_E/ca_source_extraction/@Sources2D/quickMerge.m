@@ -78,7 +78,7 @@ S_corr = corr(S') - eye(size(S,1));
 if isequal(correlation_method,'spike_train')
     try
         C_corr=spike_train_correlation(obj,obj,[.5,.5],gSiz);
-        temp=temp(obj.C',obj.C');
+        temp=corr(obj.C',obj.C');
         C_corr=max(C_corr,temp);
     catch
         C_corr=corr(obj.C',obj.C');
@@ -96,7 +96,7 @@ end
 %
 
 C_corr=C_corr-eye(size(C_corr));
-
+A_overlap=A_overlap-eye(size(A_overlap));
 %% using merging criterion to detect paired neurons
 if isequal(dist_method,'overlap')
     
