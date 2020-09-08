@@ -8,3 +8,4 @@ for i=1:length(changed_indices)
     index1=find(pair_aligned(:,1)==aligned_neurons(changed_indices(i),1));
     index2=find(pair_aligned(index1,2)==aligned_neurons(changed_indices(i),2));
     [M,I]=max(probabilities(index1));
+end

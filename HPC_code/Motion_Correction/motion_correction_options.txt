@@ -1,0 +1,5 @@
+filename={'../../Demos/vid1.mat'};
+save_file=true;
+conv_uint8=true;
+background_subtract=false;
+
