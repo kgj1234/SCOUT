@@ -1,0 +1,10 @@
+
+#Currently all definitions must be on a single line
+base_dir='../../Demos/'
+vids_per_batch=6
+overlap_per_batch=2
+data_type='1p'
+threads=4
+
+extraction_options={'JS',.11,'gSiz',25,'max_neurons',200}
+cell_tracking_options={'max_dist',45,'alignment_method',{'similarity','non-rigid'}}

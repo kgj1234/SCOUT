@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 filename={'~/SCOUT/Demos/vid1.mat'};
 save_file=true;
 conv_uint8=true;
 background_subtract=true;
+=======
+filename={'../../Demos/vid1.mat'};
+save_file=true;
+conv_uint8=true;
+background_subtract=false;
+>>>>>>> 4a675d56d800eaf546e62ea1fa2ceccc319852d2
 

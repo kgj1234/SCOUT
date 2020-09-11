@@ -4,8 +4,11 @@ HPC code is designed to work with Son of Grid Engine (SGE) HPC scheduler
 
 Matlab code must be compiled before use. Compiled code is not included due to size restrictions
 
+<<<<<<< HEAD
 SCOUT must be placed at base folder ('~') on the remote server unless new paths are specified
 
+=======
+>>>>>>> 4a675d56d800eaf546e62ea1fa2ceccc319852d2
 Compile code by running bash Submit_[code_name].hpc
 
 Otherwise, you can schedule your job with qsub [code_name]_hpc.sh
@@ -22,7 +25,10 @@ individual_extraction: takes in files for signal extraction
 
 BatchEndoscopeWrapper: takes in folder containing video files, extracts and cell tracks the results. Does not include session alignment at the present time
 
+<<<<<<< HEAD
 full_pipeline: takes in folder containing video files, optionally background subtracts, motion corrects, and aligns videos, then extracts each video and cell tracks the result
+=======
+>>>>>>> 4a675d56d800eaf546e62ea1fa2ceccc319852d2
 
 ## Notes
 
