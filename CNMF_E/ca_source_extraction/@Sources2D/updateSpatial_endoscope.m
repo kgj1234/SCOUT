@@ -23,6 +23,46 @@ if ~exist('num', 'var')||isempty(num)
     end
 end
 
+
+for i=1:size(Y,2)
+    nan_ind=[find(isnan(Y(:,i)));find(isinf(Y(:,i)))];
+    if length(nan_ind)>0
+    
+    val_ind=setdiff(1:size(Y,1),nan_ind);
+    Y(nan_ind,i)=interp1(val_ind,Y(val_ind,i),nan_ind);
+    Y(isnan(Y(:,i)),i)=0;
+    Y(isinf(Y(:,i)),i)=0;
+    end
+end
+for i=1:size(obj.C,1)
+    nan_ind=[find(isnan(obj.C(i,:))),find(isinf(obj.C(i,:)))];
+    if length(nan_ind)>0
+    try
+    val_ind=setdiff(1:size(obj.C,2),nan_ind);
+	val_ind
+	nan_ind
+	obj.C(i,:)
+	size(obj.C)
+    obj.C(i,nan_ind)=interp1(val_ind,obj.C(i,val_ind),nan_ind);
+    end
+    obj.C(i,isnan(obj.C(i,:)))=0;
+    obj.C(i,isinf(obj.C(i,:)))=0;
+    end
+end
+
+
+if sum(isnan(Y(:)))>0||sum(isinf(Y(:)))>0
+        disp('bad values Y')
+end
+if sum(isnan(obj.A(:)))>0||sum(isinf(obj.A(:)))>0
+        disp('bad values A')
+end
+if sum(isnan(obj.C(:)))>0||sum(isinf(obj.C(:)))>0
+	disp('bad values C')
+end
+
+
+
 %% determine the search locations
 search_method = obj.options.search_method;
 params = obj.options;
@@ -38,6 +78,9 @@ if and(strcmpi(method, 'hals_thresh') || strcmpi(method, 'nnls_thresh'), isempty
     sn = b0;
     parfor m=1:size(obj.A,1)
         [b0(m), sn(m)] = estimate_baseline_noise(Y(m, :));
+    end
+    if sum(isnan(b0))>0 || sum(isinf(b0))>0
+	disp('bad b0')
     end
     Y = bsxfun(@minus, Y, b0);
     obj.P.sn = sn; 

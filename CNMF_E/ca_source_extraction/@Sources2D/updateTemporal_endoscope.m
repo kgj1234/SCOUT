@@ -29,6 +29,16 @@ for i=1:size(Y,2)
     end
 end
     
+if sum(isnan(Y(:)))>0||sum(isinf(Y(:)))>0
+	disp('bad values Y')
+end
+if sum(isnan(obj.A(:)))>0||sum(isinf(obj.A(:)))>0
+	disp('bad values A')
+end
+if sum(isnan(obj.C(:)))>0||sum(isinf(obj.C(:)))>0
+	disp('bad values C')
+end
+
 
 %% initialization
 A = obj.A;
@@ -64,6 +74,9 @@ for miter=1:maxIter
         [b_hist, sn_hist] = estimate_baseline_noise(temp);
         b = mean(temp(temp<median(temp)));
         sn_psd = GetSn(temp);
+	if sum(isnan(sn_psd(:)))>0||sum(isinf(sn_psd(:)))>0
+		disp('sn bad')
+	end
         if sn_psd<sn_hist
             tmp_sn = sn_psd;
         else

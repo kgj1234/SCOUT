@@ -4,6 +4,8 @@ function m = normalize_batch(filename, var, imx, imn, idbatch, ip)
     end
     
     m = matfile(filename, 'writable', true);
+    m
+   
     nbatch = length(idbatch) - 1;
     for i = 1: nbatch
         switch ip

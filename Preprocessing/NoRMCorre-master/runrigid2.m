@@ -89,8 +89,9 @@ else
 end
 Ysiz=size(Y);
 if save_file & from_file
-mkdir motion_corrected
+
 [path,name,ext]=fileparts(file);
+mkdir(fullfile(path,'motion_corrected'))
 if ~isempty(path)
 save(fullfile(path,'motion_corrected',[name,'_motion_corrected','.mat']),'Y','Ysiz','-v7.3')
 else

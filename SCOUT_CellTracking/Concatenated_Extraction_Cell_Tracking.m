@@ -5,7 +5,7 @@ global_extraction_parameters.batch_sizes=batch_sizes;
 global_extraction_parameters.data_type=data_type;
 global_extraction_parameters.overlap_per_batch=overlap_per_batch;
 global_extraction_parameters.threads=threads;
-
+cd(base_dir)
 folders=dir;
 is_dir=cell2mat({folders.isdir});
 folders={folders.name};

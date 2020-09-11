@@ -51,6 +51,7 @@ filter=spatial_filter_options.filter;
 raw_neuron=neuron.copy();
 
 JS=[];
+A={};
 for i=1:size(neuron.A,2);
     A{i}=full(neuron.A(:,i));
 end

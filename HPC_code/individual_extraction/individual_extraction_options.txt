@@ -1,0 +1,9 @@
+filename={'~/SCOUT/Demos/vid2.mat','~/SCOUT/Demos/vid1.mat'}
+gSiz=25;
+data_type='1p';
+max_neurons=100;
+min_corr=.2;
+corr_noise=.0005;
+indices=[];
+min_pnr=5;
+JS=.1;

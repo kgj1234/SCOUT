@@ -1,0 +1,13 @@
+
+#Currently all definitions must be on a single line
+base_dir='~/SCOUT/Demos/'
+vids_per_batch=1
+overlap_per_batch=0
+data_type='1p'
+threads=12
+
+extraction_options={'JS',.11,'gSiz',25,'max_neurons',200}
+cell_tracking_options={'max_dist',45,'alignment_method',{'similarity','non-rigid'},'overlap',250}
+
+
+base_dir='/pub/kgjohnst/SCOUT/temp/'

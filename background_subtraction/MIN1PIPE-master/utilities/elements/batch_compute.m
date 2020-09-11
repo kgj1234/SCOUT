@@ -1,10 +1,16 @@
 function nbatch = batch_compute(nsize)
+   
+    
     if ispc
         memo = pc_mem / 2;
     elseif ismac
         memo = mac_mem / 2;
     elseif isunix
         memo = unix_mem / 2;
+    end
+    if isempty(memo)
+        %Assume 128 GB memory
+        memo=1.2715e+11;
     end
     nbatch = ceil(nsize / memo);
 end

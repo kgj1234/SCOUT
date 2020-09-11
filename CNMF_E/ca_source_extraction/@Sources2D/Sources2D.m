@@ -759,7 +759,11 @@ classdef Sources2D < handle
             if ~exist('show_delete', 'var')
                 show_delete = false;
             end
-            tags_ = obj.tag_neurons_parallel();  % find neurons with fewer nonzero pixels than min_pixel and silent calcium transients
+            try
+                tags_ = obj.tag_neurons_parallel();  % find neurons with fewer nonzero pixels than min_pixel and silent calcium transients
+            catch
+                tags_=[];
+            end
             ids = find(tags_);
             if isempty(ids)
                 fprintf('all components are good \n');

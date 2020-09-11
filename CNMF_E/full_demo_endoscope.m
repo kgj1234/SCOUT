@@ -437,12 +437,11 @@ fprintf('Time cost in estimating the background:        %.2f seconds\n', toc);
 tic;
 
 for zz=1:2
-    
     neuron.updateSpatial_endoscope(Ysignal,Nspatial,update_spatial_method);
-    
+     
     neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
     neuron.compactSpatial();    % run this line if neuron shapes are circular
-    
+   
     %This function splits neurons that seem to be improperly merged. It
     %frequently overestimates the number of neurons needing to be split
     %neuron=split_neurons(neuron,[d1,d2],dmin,gSizMin);
@@ -459,25 +458,23 @@ for zz=1:2
         
     end
     
-    
     %temporal
     try
         neuron.updateTemporal_endoscope(Ysignal);
         
     end
-    disp('num_neurons')
-    size(neuron.C,1)
+    
     try
         cnmfe_quick_merge;              % run neuron merges
     end
     %spatial
     
     neuron.remove_false_positives();
+  
     try
         cnmfe_merge_neighbors;
     end
-    
-    
+       
 end
 
 neuron.updateSpatial_endoscope(Ysignal, Nspatial, update_spatial_method);

@@ -121,6 +121,7 @@ else
 %  For each block, print out its size.
 %
   fprintf(fid,'%d\n',full(K.s));
+end
 %
 %  Next, the cost matrix C.s.
 %
@@ -139,6 +140,7 @@ else
       disp('Non symmetric C.s matrix!');
       work=(work+work')/2;
     end;
+    end
     work=triu(work);
     [II,JJ,V]=find(work);
     cnt=length(II);
