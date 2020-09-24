@@ -1,5 +1,8 @@
 function del_ind=identify_spatial_irregularities(neuron,indices)
 close all
+figure()
+imagesc(neuron.Cn);
+figure()
 bad_ind=[];
 good_ind=indices(1):indices(2);
 

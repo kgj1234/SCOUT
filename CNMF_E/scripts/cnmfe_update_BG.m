@@ -5,10 +5,14 @@ Ybg = Y-neuron.A*neuron.C;
 
 rr = ceil(neuron.options.gSiz * bg_neuron_ratio); 
 active_px = []; %(sum(IND, 2)>0);  %If some missing neurons are not covered by active_px, use [] to replace IND
+neuron.P.sn(isnan(neuron.P.sn)|neuron.P.sn==0)=1;
 [Ybg, Ybg_weights] = neuron.localBG(Ybg, spatial_ds_factor, rr, active_px, neuron.P.sn, thresh); % estiamte local background.
 % subtract the background from the raw data.
-Ysignal = Y - Ybg;
+Ybg=interpolate_nan(Ybg);
+Y=interpolate_nan(Y);
 
+Ysignal = Y - Ybg;
+Ysignal=interpolate_nan(Ysignal);
 %% estimate noise 
 if ~isfield(neuron.P, 'sn') || isempty(neuron.P.sn)
     %% estimate the noise for all pixels
@@ -19,4 +23,6 @@ if ~isfield(neuron.P, 'sn') || isempty(neuron.P.sn)
     end     
     Ysignal = bsxfun(@minus, Ysignal, b0);
     neuron.P.sn = sn; 
+
+    neuron.P.sn(isnan(neuron.P.sn)|neuron.P.sn==0)=1;
 end

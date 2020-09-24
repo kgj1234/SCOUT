@@ -34,7 +34,8 @@ elseif ~isfield(neuron.P, 'sn') || isempty(neuron.P.sn)
 else
     sn = neuron.P.sn; 
 end
-
+neuron.P.sn(isnan(neuron.P.sn)|neuron.P.sn==0)=1;
+neuron.P.kernel_pars(isnan(neuron.P.kernel_pars)|neuron.P.kernel_pars==0)=1;
 %% estimate the background 
 rr = bg_neuron_ratio * neuron.options.gSiz; 
 cnmfe_update_BG; 
@@ -50,5 +51,7 @@ for miter=1:maxIter
     
     neuron.updateTemporal_endoscope(Ysignal);
     fprintf('Time cost in updating neuronal temporal components:     %.2f seconds\n', toc);   
+    neuron.remove_false_positives();
+
 end
     

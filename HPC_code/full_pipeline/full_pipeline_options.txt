@@ -1,4 +1,23 @@
 #Currently all definitions must be on a single line
+<<<<<<< HEAD
+
+vids_per_batch=1
+overlap_per_batch=0
+data_type='1p'
+threads=3
+save_file=true;
+conv_uint8=true;
+
+motion_correct=true
+background_subtract=true;
+from_filtered=false;
+register_sessions=false;
+extract_videos=true
+
+extraction_options={'JS',.11,'gSiz',25,'max_neurons',250,'corr_noise',true,'min_corr',.3}
+cell_tracking_options={'max_dist',45,'alignment_method',{'similarity','non-rigid'},'overlap',0}
+
+=======
 base_dir='../../Demos/'
 vids_per_batch=1
 overlap_per_batch=0
@@ -18,3 +37,4 @@ cell_tracking_options={'max_dist',45,'alignment_method',{'similarity','non-rigid
 base_dir='/pub/kgjohnst/SCOUT/temp/'
 
 
+>>>>>>> 1b79ac8f015244c3f87d381b6f04f384c54ab5aa

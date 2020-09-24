@@ -278,7 +278,7 @@ while miter <= maxIter
     tic;
     cnmfe_update_BG;
     fprintf('Time cost in estimating the background:        %.2f seconds\n', toc);
-    
+    neuron.remove_false_positives();
     % neuron.playMovie(Ysignal); % play the video data after subtracting the background components.
     
     %% update spatial & temporal components
@@ -290,7 +290,7 @@ while miter <= maxIter
         %neuron=split_neurons(neuron,[ceil(d1/ssub),ceil(d2/ssub)],dmin,gSizMin);
         neuron.updateSpatial_endoscope(Ysignal, Nspatial, update_spatial_method);
         neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
-        
+        neuron.remove_false_positives();
         
         if JS>0&zz>1
             
@@ -300,7 +300,9 @@ while miter <= maxIter
         
         
         %temporal
-        neuron.updateTemporal_endoscope(Ysignal);
+        try
+            neuron.updateTemporal_endoscope(Ysignal);
+        end
         try
             cnmfe_quick_merge;              % run neuron merges
         end
@@ -353,7 +355,7 @@ while miter <= maxIter
                 
                 cnmfe_update_BG;
                 fprintf('Time cost in estimating the background:        %.2f seconds\n', toc);
-                
+                neuron.remove_false_positives();
                 
                 %temporal
                 try
@@ -372,7 +374,7 @@ while miter <= maxIter
                 
                 neuron.updateSpatial_endoscope(Ysignal, Nspatial, update_spatial_method);
                 neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
-                
+                neuron.remove_false_positives();
                 if JS>0 & zz>1
                     spatial_filter_options.filter=true;
                     [~,JS_score]=spatial_filter(neuron,spatial_filter_options);
@@ -430,11 +432,11 @@ cnmfe_update_BG;
 fprintf('Time cost in estimating the background:        %.2f seconds\n', toc);
 %update spatial & temporal components
 tic;
-
+neuron.remove_false_positives();
 for zz=1:2
     
     neuron.updateSpatial_endoscope(Ysignal,Nspatial,update_spatial_method);
-    
+    neuron.remove_false_positives();
     neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
     %  neuron.compactSpatial();    % run this line if neuron shapes are circular
     
@@ -471,7 +473,7 @@ for zz=1:2
     try
         cnmfe_merge_neighbors;
     end
-    
+    neuron.remove_false_positives();
     
 end
 

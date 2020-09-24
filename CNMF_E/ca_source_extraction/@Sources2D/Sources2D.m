@@ -597,6 +597,7 @@ classdef Sources2D < handle
         function [srt] = orderROIs(obj, srt)
             %% order neurons
             % srt: sorting order
+            
             nA = sqrt(sum(obj.A.^2));
             nr = length(nA);
             if nargin<2
@@ -764,7 +765,14 @@ classdef Sources2D < handle
             catch
                 tags_=[];
             end
+<<<<<<< HEAD
+            tags_=tags_|(sum(isnan(obj.C),2)>0)|(sum(isnan(full(obj.A)),1)>0)';
+=======
+>>>>>>> 1b79ac8f015244c3f87d381b6f04f384c54ab5aa
             ids = find(tags_);
+            if length(ids)>0
+                disp(['deleting ',num2str(length(ids)),' false positives'])
+            end
             if isempty(ids)
                 fprintf('all components are good \n');
             else
@@ -774,6 +782,7 @@ classdef Sources2D < handle
                     obj.delete(ids);
                 end
             end
+            
             if link
                 tmp1=obj.copy();
                 tmp2=obj.copy();
@@ -834,6 +843,9 @@ classdef Sources2D < handle
             end
             if isfield(obj.P, 'kernel_pars')&&(  ~isempty(obj.P.kernel_pars))
                 try obj.P.kernel_pars(ind, :) = []; catch; end
+            end
+            if isfield(obj.P,'sn_neuron')&&(~isempty(obj.P.sn_neuron))
+                try obj.P.sn_neuron(ind)=[]; catch; end
             end
             try  obj.ids(ind) = [];   catch;   end
             try obj.tags(ind) =[]; catch; end

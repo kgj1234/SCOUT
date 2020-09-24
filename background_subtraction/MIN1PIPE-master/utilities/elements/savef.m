@@ -15,6 +15,7 @@ function savef(filename, flag, varargin)
     [filepath, filebase, ext] = fileparts(filename);
     if isempty(ext)
         filename = fullfile(filepath, [filebase '.mat']);
+        filename
     end
 
     if all(isnum)
@@ -84,6 +85,19 @@ function savef(filename, flag, varargin)
             start = [ones(1, length(sz) - 1), stt];
             count = [size(vars{i}), 1];
             count = count(1: 3);
+            %m=matfile(filename,'Writable',true);
+            %if isequal(varname(1),'/')
+            %    varname(1)=[];
+            %end
+            %try
+            %    m.(varname)(start(1):count(1),start(2):count(2),start(3):count(3))=vars{i};
+            %catch
+            %    m
+            %    disp('save failed')
+             %   start
+             %   count
+             %   m.(varname)(start(1):count(1),start(2):count(2),start(3):count(3))=vars{i};
+            %end
             h5write(filename, varname, vars{i}, start, count);
         end
     end

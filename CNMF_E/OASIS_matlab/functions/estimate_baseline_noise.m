@@ -19,17 +19,34 @@ end
 temp = quantile(y, 0:0.1:1); 
 dbin = max(min(diff(temp))/3, (max(temp)-min(temp))/1000); 
 bins = temp(1):dbin:temp(end); 
-nums = hist(y, bins); 
 
-%% fit a gaussian distribution: nums = A * exp(-(bins-b)/(2*sig^2))
-if isempty(bins)
+try
+    nums = hist(y, bins); 
+catch
+    disp('temp')
+    disp(temp)
+    disp(length(temp))
+    disp('bins')
+    disp(bins)
     b = mean(y);
     sn = 0;
     return; 
 end
-[b, sn] = fit_gauss1(bins, nums, 0.3, 3);
+%% fit a gaussian distribution: nums = A * exp(-(bins-b)/(2*sig^2))
+if isempty(bins)|length(bins)==1|sum(isnan(temp))>0
+    b = mean(y);
+    sn = 0;
+    return; 
+end
+try
+    [b, sn] = fit_gauss1(bins, nums, 0.3, 3);
 
-if b<bmin
-    b = bmin;
-    sn = fit_gauss1(bins-bmin, nums, 0.3, 3,false );
+    if b<bmin
+        b = bmin;
+        sn = fit_gauss1(bins-bmin, nums, 0.3, 3,false );
+    end
+catch
+    b=mean(y);
+    sn=0;
+    return
 end

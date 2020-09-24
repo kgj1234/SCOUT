@@ -402,7 +402,7 @@ while searching_flag && K>0
             
             % update correlation image
             if isfield(options,'add_noise')&options.add_noise
-                tmp_Cn=correlation_image(HY_box_thr,[1,2],nr2,nc2,[],[],true);
+                tmp_Cn=correlation_image(HY_box_thr,[1,2],nr2,nc2,[],[],options.add_noise);
             else
                 tmp_Cn = correlation_image(HY_box_thr, [1,2], nr2, nc2);
             end

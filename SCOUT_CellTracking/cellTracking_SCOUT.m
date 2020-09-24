@@ -170,7 +170,7 @@ end
 
 if register_sessions
    %3 alignment iterations
-   for k=1:2
+   for k=1:3
         [neurons,links]=register_neurons_links(neurons,links,registration_template,registration_type,registration_method,base);
         base=randi([1,length(neurons)],1,1);
    end
