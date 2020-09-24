@@ -22,14 +22,8 @@ if strcmpi(file_type, '.mat')
     m=matfile(nam);
     for q=1:length(vars)
         if length(size(m,vars{q}))==3 &~isequal(vars{q},'Y')
-            Y=load(nam,vars{q});
-            Y=getfield(Y,vars{q});
-            Ysiz=size(Y);
-            save([dir_nm, filesep, file_nm, '_renamed.mat'],'Y','Ysiz','-v7.3')
-            nam_mat=[dir_nm, filesep, file_nm, '_renamed.mat'];
-            break
-        end
-    end
+            Y=load(nam,vars{q})
+            Ysiz=size(Y)
     for q=1:length(vars)
         if length(size(m,vars{q}))>3
             Y=load(nam,vars{q});
