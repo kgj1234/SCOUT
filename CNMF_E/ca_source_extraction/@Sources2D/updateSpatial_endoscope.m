@@ -53,7 +53,6 @@ end
 
 if sum(isnan(Y(:)))>0||sum(isinf(Y(:)))>0
         disp('bad values Y')
-<<<<<<< HEAD
         Y(isnan(Y(:))|isinf(Y(:)))=0;
 end
 if sum(isnan(obj.A(:)))>0||sum(isinf(obj.A(:)))>0
@@ -63,14 +62,6 @@ end
 if sum(isnan(obj.C(:)))>0||sum(isinf(obj.C(:)))>0
         disp('bad values C')
         obj.C(isnan(obj.C(:))|isinf(obj.C(:)))=0;
-=======
-end
-if sum(isnan(obj.A(:)))>0||sum(isinf(obj.A(:)))>0
-        disp('bad values A')
-end
-if sum(isnan(obj.C(:)))>0||sum(isinf(obj.C(:)))>0
-	disp('bad values C')
->>>>>>> 1b79ac8f015244c3f87d381b6f04f384c54ab5aa
 end
 
 
@@ -92,14 +83,10 @@ if and(strcmpi(method, 'hals_thresh') || strcmpi(method, 'nnls_thresh'), isempty
         [b0(m), sn(m)] = estimate_baseline_noise(Y(m, :));
     end
     if sum(isnan(b0))>0 || sum(isinf(b0))>0
-<<<<<<< HEAD
         disp('bad b0')
         b0(isnan(b0))=1;
         sn=b0;
     
-=======
-	disp('bad b0')
->>>>>>> 1b79ac8f015244c3f87d381b6f04f384c54ab5aa
     end
     Y = bsxfun(@minus, Y, b0);
     obj.P.sn = sn; 

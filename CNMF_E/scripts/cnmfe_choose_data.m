@@ -45,13 +45,7 @@ elseif strcmpi(file_type, '.avi')
     fprintf('converting the selected file to *.mat version...\n');
     v=VideoReader(nam);
     Y=v.read;
-    
     Ysiz=size(Y);
-    if length(Ysiz)>3
-        Y=max(squeeze(Y,[],3));
-        Ysiz=size(Y);
-        disp('Video is in full color, using max projection to convert to grayscale')
-    end
     save(file_nm,'Y','Ysiz','-v7.3')
     fprintf('Time cost in converting data to *.mat file:     %.2f seconds\n', toc);
 elseif or(strcmpi(file_type, '.h5'), strcmpi(file_type, '.hdf5'))

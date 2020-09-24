@@ -765,10 +765,7 @@ classdef Sources2D < handle
             catch
                 tags_=[];
             end
-<<<<<<< HEAD
             tags_=tags_|(sum(isnan(obj.C),2)>0)|(sum(isnan(full(obj.A)),1)>0)';
-=======
->>>>>>> 1b79ac8f015244c3f87d381b6f04f384c54ab5aa
             ids = find(tags_);
             if length(ids)>0
                 disp(['deleting ',num2str(length(ids)),' false positives'])

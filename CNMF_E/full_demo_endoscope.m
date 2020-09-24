@@ -440,11 +440,7 @@ tic;
 neuron.remove_false_positives();
 for zz=1:2
     neuron.updateSpatial_endoscope(Ysignal,Nspatial,update_spatial_method);
-<<<<<<< HEAD
     neuron.remove_false_positives();
-=======
-     
->>>>>>> 1b79ac8f015244c3f87d381b6f04f384c54ab5aa
     neuron.trimSpatial(0.01, 3); % for each neuron, apply imopen first and then remove pixels that are not connected with the center
     neuron.compactSpatial();    % run this line if neuron shapes are circular
    

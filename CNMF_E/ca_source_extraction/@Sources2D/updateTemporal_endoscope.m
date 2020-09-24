@@ -31,7 +31,6 @@ end
     
 if sum(isnan(Y(:)))>0||sum(isinf(Y(:)))>0
 	disp('bad values Y')
-<<<<<<< HEAD
     Y(isnan(Y(:)|isinf(Y(:))))=0;
 end
 if sum(isnan(obj.A(:)))>0||sum(isinf(obj.A(:)))>0
@@ -41,14 +40,6 @@ end
 if sum(isnan(obj.C(:)))>0||sum(isinf(obj.C(:)))>0
 	disp('bad values C')
     obj.C(isnan(obj.C(:))|isinf(obj.C(:)))=0;
-=======
-end
-if sum(isnan(obj.A(:)))>0||sum(isinf(obj.A(:)))>0
-	disp('bad values A')
-end
-if sum(isnan(obj.C(:)))>0||sum(isinf(obj.C(:)))>0
-	disp('bad values C')
->>>>>>> 1b79ac8f015244c3f87d381b6f04f384c54ab5aa
 end
 
 
@@ -100,7 +91,6 @@ for miter=1:maxIter
         [b_hist, sn_hist] = estimate_baseline_noise(temp);
         b = mean(temp(temp<median(temp)));
         sn_psd = GetSn(temp);
-<<<<<<< HEAD
         if sum(isnan(sn_psd(:)))>0|sum(isinf(sn_psd(:)))>0|isnan(b_hist)|isnan(sn_hist)
             disp('sn bad')
             smin(k) = deconv_options.smin;
@@ -112,11 +102,6 @@ for miter=1:maxIter
             sn(k)=1;
             continue;
         end
-=======
-	if sum(isnan(sn_psd(:)))>0||sum(isinf(sn_psd(:)))>0
-		disp('sn bad')
-	end
->>>>>>> 1b79ac8f015244c3f87d381b6f04f384c54ab5aa
         if sn_psd<sn_hist
             tmp_sn = sn_psd;
         else
