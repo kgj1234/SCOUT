@@ -59,6 +59,7 @@ elseif strcmpi(file_type, '.avi')
     fprintf('converting the selected file to *.mat version...\n');
     v=VideoReader(nam);
     Y=v.read;
+  
     Ysiz=size(Y);
     if length(Ysiz)>3
         Y=squeeze(max(Y,[],3));
@@ -69,6 +70,6 @@ elseif strcmpi(file_type, '.avi')
 
 else
       nam_mat=[];
-      disp('File type not supported or file is not video file')
+      disp('Unable to convert ', nam)
 end
 

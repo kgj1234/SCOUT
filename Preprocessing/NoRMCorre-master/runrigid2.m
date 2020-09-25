@@ -26,6 +26,10 @@ if ischar(file)
     elseif isequal(ext,'.avi')
         v=VideoReader(file);
         Yf=read(v);
+        Yf=squeeze(max(Yf,[],3));
+        Yf=Yf(41:end,:,:);
+        
+        Yf=imresize(Yf,[round(size(Yf,1)/2),round(size(Yf,2)/2)]);
         Yf=single(Yf);
     elseif (isequal(ext,'.tif')||isequal(ext,'.tiff'))
         Yf=loadtiff(file);
@@ -38,32 +42,33 @@ end
 if length(size(Yf))==4
     Yf=squeeze(max(Yf,[],3));
 end
+
 [d1,d2,T] = size(Yf);
 
 %% perform some sort of deblurring/high pass filtering
 
-% if (0)    
-%     hLarge = fspecial('average', 40);
-%     hSmall = fspecial('average', 2); 
-%     for t = 1:T
-%         Y(:,:,t) = filter2(hSmall,Yf(:,:,t)) - filter2(hLarge, Yf(:,:,t));
-%     end
-%     %Ypc = Yf - Y;
-%     bound = size(hLarge,1);
-% else
-%     gSig = 3; %%original 7
-%     gSiz = 7; %%original 17
-%     psf = fspecial('gaussian', round(gSiz), gSig);
-%     ind_nonzero = (psf(:)>=max(psf(:,1)));
-%     psf = psf-mean(psf(ind_nonzero));
-%     psf(~ind_nonzero) = 0;   % only use pixels within the center disk
-%     %Y = imfilter(Yf,psf,'same');
-%     %bound = 2*ceil(gSiz/2);
-%     Y = imfilter(Yf,psf,'symmetric');
-%     bound = 50;
-% end
+if (0)    
+    hLarge = fspecial('average', 40);
+    hSmall = fspecial('average', 2); 
+    for t = 1:T
+        Y(:,:,t) = filter2(hSmall,Yf(:,:,t)) - filter2(hLarge, Yf(:,:,t));
+    end
+    %Ypc = Yf - Y;
+    bound = size(hLarge,1);
+else
+    gSig = 3; %%original 7
+    gSiz = 7; %%original 17
+    psf = fspecial('gaussian', round(gSiz), gSig);
+    ind_nonzero = (psf(:)>=max(psf(:,1)));
+    psf = psf-mean(psf(ind_nonzero));
+    psf(~ind_nonzero) = 0;   % only use pixels within the center disk
+    %Y = imfilter(Yf,psf,'same');
+    %bound = 2*ceil(gSiz/2);
+    Y = imfilter(Yf,psf,'symmetric');
+    bound = 50;
+end
 bound=0;
-Y=Yf;
+
 %% first try out rigid motion correction
     % exclude boundaries due to high pass filtering effects
 options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',40,'max_shift',8,'iter',2,'correct_bidir',false);

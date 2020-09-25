@@ -1,4 +1,4 @@
-function [proj1,registrations]=register_projections(proj1,proj2,registration_method)
+function [curr_template,registrations]=register_projections(proj1,proj2,registration_method)
 
 
 
