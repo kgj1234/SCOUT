@@ -1,12 +1,12 @@
-Username=;
-Hostname=;
-Password=;
+Username='kgjohnst';
+Hostname='hpc.oit.uci.edu';
+Password='Xfiles123$';
 SCOUT_loc='/data/KevinStuff_08272020/SCOUT/'; %SCOUT location on local computer
 SCOUT_loc_host='~/SCOUT/'; %SCOUT location on host (SCOUT should be at this location, as some paths are hardcoded)
 Host_data_dir='/pub/kgjohnst'; %Base data storage directory on host
 
 %folder with video files on local computer
-extraction_folder='./layer4';
+extraction_folder='./';
 
 
 

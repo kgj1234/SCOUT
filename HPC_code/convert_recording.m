@@ -59,7 +59,7 @@ elseif strcmpi(file_type, '.avi')
     fprintf('converting the selected file to *.mat version...\n');
     v=VideoReader(nam);
     Y=v.read;
-  
+    
     Ysiz=size(Y);
     if length(Ysiz)>3
         Y=squeeze(max(Y,[],3));

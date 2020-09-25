@@ -22,8 +22,14 @@ if strcmpi(file_type, '.mat')
     m=matfile(nam);
     for q=1:length(vars)
         if length(size(m,vars{q}))==3 &~isequal(vars{q},'Y')
-            Y=load(nam,vars{q})
-            Ysiz=size(Y)
+            Y=load(nam,vars{q});
+            Y=getfield(Y,vars{q});
+            Ysiz=size(Y);
+            save([dir_nm, filesep, file_nm, '_renamed.mat'],'Y','Ysiz','-v7.3')
+            nam_mat=[dir_nm, filesep, file_nm, '_renamed.mat'];
+            break
+        end
+    end
     for q=1:length(vars)
         if length(size(m,vars{q}))>3
             Y=load(nam,vars{q});
@@ -53,6 +59,9 @@ elseif strcmpi(file_type, '.avi')
     fprintf('converting the selected file to *.mat version...\n');
     v=VideoReader(nam);
     Y=v.read;
+    Y=squeeze(max(Y,[],3));
+    
+    
     Ysiz=size(Y);
     if length(Ysiz)>3
         Y=squeeze(max(Y,[],3));
@@ -63,6 +72,6 @@ elseif strcmpi(file_type, '.avi')
 
 else
       nam_mat=[];
-      disp('File type not supported or file is not video file')
+      disp('Unable to convert ', nam)
 end
 
