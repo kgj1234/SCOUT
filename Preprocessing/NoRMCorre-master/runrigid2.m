@@ -26,6 +26,7 @@ if ischar(file)
     elseif isequal(ext,'.avi')
         v=VideoReader(file);
         Yf=read(v);
+        
         Yf=single(Yf);
     elseif (isequal(ext,'.tif')||isequal(ext,'.tiff'))
         Yf=loadtiff(file);
