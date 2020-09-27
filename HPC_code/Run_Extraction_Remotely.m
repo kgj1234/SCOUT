@@ -1,6 +1,6 @@
-Username='kgjohnst';
-Hostname='hpc.oit.uci.edu';
-Password='Xfiles123$';
+Username=;
+Hostname=;
+Password=;
 SCOUT_loc='/data/KevinStuff_08272020/SCOUT/'; %SCOUT location on local computer
 SCOUT_loc_host='~/SCOUT/'; %SCOUT location on host (SCOUT should be at this location, as some paths are hardcoded)
 Host_data_dir='/pub/kgjohnst'; %Base data storage directory on host
