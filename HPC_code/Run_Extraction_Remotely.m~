@@ -6,7 +6,7 @@ SCOUT_loc_host='~/SCOUT/'; %SCOUT location on host (SCOUT should be at this loca
 Host_data_dir='/pub/kgjohnst'; %Base data storage directory on host
 
 %folder with video files on local computer
-extraction_folder='./layer4';
+%extraction_folder='./layer2/';
 
 
 
@@ -134,12 +134,43 @@ for k=1:length(ssh2_conn.command_result)
         job_running=true;
     end
 end
+
+%Retrieve log files
 try
     ssh2_conn=scp_get(ssh2_conn,{['batchendoscope.o',num2str(job_num)],...
     ['batchendoscope.e',num2str(job_num)]},'.','~/');
 end
+
+%Find out if extraction completed successfully
+cmd=['find ',Host_folder,' -name', ' "SCOUT_neuron.mat"'];
+ssh2_conn=ssh2_command(ssh2_conn,cmd);
+if length(ssh2_conn.command_result{1})==0
+    failed=true;
+else
+    failed=false;
+end
+
 if ~job_running
-    disp('Data Extracted (or extraction failed)')
+    if failed
+        disp('Extraction Failed')
+        retry=input('Attempt re-extraction? y/n: ');
+        if isequal(retry,'y')
+            ssh2_conn=scp_put(ssh2_conn,opt_path{end},Host_folder,loc_path);
+            edit_sh_file([loc_path,'full_pipeline_hpc.sh'],Host_folder);
+            ssh2_conn=scp_put(ssh2_conn,'full_pipeline_hpc.sh',host_path,loc_path);
+            if ~isempty(ssh2_conn.command_result{1})
+                %Submit job
+                cmd=['qsub ', [host_path,'full_pipeline_hpc.sh']];
+                ssh2_conn=ssh2_command(ssh2_conn,cmd);
+            else
+                
+                %Compile and run analysis code, this can take up to 30 minutes
+                cmd=['bash ',[host_path,'compile_full_pipeline.sh']];
+                ssh2_conn=ssh2_command(ssh2_conn,cmd);
+            end
+        end
+    
+    else
     try
         ext_path=regexp(extraction_folder,filesep,'split');
         ext_path1='';
@@ -158,8 +189,8 @@ if ~job_running
         
         %Move data to local machine (This has to be run on the system to
         %retrieve folders recursively
-        if ispc
-            cmd=['pscp -P 22 -r '
+        if ispc %Requires putty
+            cmd=['pscp -P 22 -r ',Username,'@',Hostname,':',Host_folder,' ', ext_path1];
         else
             cmd=['scp -r ',Username,'@',Hostname,':',Host_folder,' ', ext_path1];
         end
@@ -171,7 +202,7 @@ if ~job_running
     end
 else
     disp('Code is still running')
-   
+    
 end
 
 ssh2_conn = ssh2_close(ssh2_conn);

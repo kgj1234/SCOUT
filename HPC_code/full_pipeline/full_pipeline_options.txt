@@ -9,7 +9,7 @@ conv_uint8=true;
 
 motion_correct=true
 background_subtract=true;
-from_filtered=false;
+from_filtered=true;
 register_sessions=false;
 extract_videos=true
 

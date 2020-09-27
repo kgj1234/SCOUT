@@ -21,7 +21,7 @@ if strcmpi(file_type, '.mat')
     
     m=matfile(nam);
     for q=1:length(vars)
-        if length(size(m,vars{q}))==3 &~isequal(vars{q},'Y')
+        if length(size(m,vars{q}))==3 &(~isequal(vars{q},'Y')& ~isequal(vars{q},'Mr'))
             Y=load(nam,vars{q});
             Y=getfield(Y,vars{q});
             Ysiz=size(Y);
@@ -59,7 +59,7 @@ elseif strcmpi(file_type, '.avi')
     fprintf('converting the selected file to *.mat version...\n');
     v=VideoReader(nam);
     Y=v.read;
-    
+ 
     Ysiz=size(Y);
     if length(Ysiz)>3
         Y=squeeze(max(Y,[],3));
