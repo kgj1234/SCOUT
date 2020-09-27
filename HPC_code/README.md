@@ -6,13 +6,15 @@
 
 3) full_pipeline_hpc.sh contains the job info, where you can specify the folder name of the directory containing videos, the number of cores and which nodes to run on
 
-4) Run_Extraction_Remotely.m contains functionality to perform most HPC processes from a matlab instance. Simply edit the local directory to the recordings and the SCOUT folder location and run the script. Reload the parameters and run the second section of the script to retrieve extracted videos.
+4) Run_Extraction_Remotely.m contains functionality to perform most HPC processes from a matlab instance. Simply edit the local directory to the recordings and the SCOUT folder location and run the script. 
 
-5) Recordings must have the following properties: size-[m,n,T] (no full color), format-'.mat' containing variable Y. Run_Extraction_Remotely.m attempts to convert .avi and .mat files to this form.
+5) Retrieve_Extracted_Files.m contains contains functionality for retrieving extracted files from the HPC. Simply load job information (automatically saved by Run_Extraction_Remotely.m) and run the script.
 
-6) Retrieval of files on PC requires Putty (https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+6) Recordings must have the following properties: size-[m,n,T] (no full color), format-'.mat' containing variable Y. Run_Extraction_Remotely.m attempts to convert .avi and .mat files to this form.
 
-7) SCOUT must be placed at base folder ('~') on the host server due to several hard coded file paths
+7) Retrieval of files on PC requires Putty (https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html)
+
+8) SCOUT must be placed at base folder ('~') on the host server due to several hard coded file paths
 
 ## Options
 
