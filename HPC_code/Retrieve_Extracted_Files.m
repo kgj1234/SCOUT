@@ -54,6 +54,11 @@ if ~job_running
         disp('Extraction Succeeded')
         try
             ext_path=regexp(extraction_folder,filesep,'split');
+            for k=length(ext_path):-1:1
+                if isempty(ext_path{k})
+                    ext_path(k)=[];
+                end
+            end
             ext_path1='';
             if isunix
                 ext_path1='/';

@@ -11,7 +11,7 @@ display_progress_bar('Aligning Recordings: ',false);
 display_progress_bar(0,false);
 if isequal(registration_template,'correlation')
     base_template=neurons{base}.Cn;
-    base_template(base_template<.9)=0;
+    base_template(base_template<.08)=0;
     base_template_norm=base_template;
 else
     base_template_norm=max(reshape(neurons{base}.A./max(neurons{base}.A,[],1),neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
@@ -23,7 +23,7 @@ if isequal(registration_type,'align_to_base')
     for i=[1:base-1,base+1:length(neurons)]
         if isequal(registration_template,'correlation')
             template=neurons{i}.Cn;
-            template(template<.9)=0;
+            template(template<.08)=0;
             template_norm=template;
         else
             template_norm=max(reshape(neurons{i}.A./max(neurons{i}.A,[],1),neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);

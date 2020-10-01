@@ -70,6 +70,6 @@ elseif strcmpi(file_type, '.avi')
 
 else
       nam_mat=[];
-      disp('Unable to convert ', nam)
+      disp(['Unable to convert ', nam])
 end
 

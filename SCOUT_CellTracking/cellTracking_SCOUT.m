@@ -309,6 +309,9 @@ for i=1:size(cell_register,1)
               C_raw{k}=neurons{k}.C_raw(cell_register(i,k),:);
             end
             try
+               C_df{k}=neurons{k}.C_df(cell_register(i,k),:);
+            end
+            try
                 S{k}=neurons{k}.S(cell_register(i,k),:);
             end
             A=A+neurons{k}.A(:,cell_register(i,k));
@@ -317,6 +320,10 @@ for i=1:size(cell_register,1)
             C{k}=zeros(1,size(neurons{k}.C,2));
             try
              C_raw{k}=zeros(1,size(neurons{k}.C,2));
+            
+            end
+            try
+                C_df{k}=zeros(1,size(neurons{k}.C_df,2));
             end
             try
                 S{k}=zeros(1,size(neurons{k}.C,2));
@@ -330,6 +337,9 @@ for i=1:size(cell_register,1)
     neuron.C=vertcat(neuron.C,horzcat(C{:}));
     try
         neuron.C_raw=vertcat(neuron.C_raw,horzcat(C_raw{:}));
+    end
+    try
+        neuron.C_df=vertcat(neuron.C_df,horzcat(C_df{:}));
     end
     try
         neuron.S=vertcat(neuron.S,horzcat(S{:}));
