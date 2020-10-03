@@ -22,9 +22,9 @@ cell_tracking_options.probability_assignment_method='Kmeans'; %(Probabilistic me
 
 %Global cell tracking parameters
 base_dir='./'; %(Directory containing video files)
-vids_per_batch=1; %(Set to 1 for standard cell tracking. Increasing this parameter constructs concatenated 
+vids_per_batch=2; %(Set to 1 for standard cell tracking. Increasing this parameter constructs concatenated 
                     %videos for use in longer term cell tracking) 
-overlap_per_batch=0; %(Set to 0 for standard cell tracking. Must be at least one if vids_per_batch>1)
+overlap_per_batch=1; %(Set to 0 for standard cell tracking. Must be at least one if vids_per_batch>1)
 data_type='1p';
 threads=4; %Number of sessions to extract simultaneously, high values can easily exceed memory threshold, but significantly boost speed
 

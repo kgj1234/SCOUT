@@ -2,7 +2,7 @@
 
 vids_per_batch=1
 overlap_per_batch=0
-data_type='1p'
+data_type='2p'
 threads=3
 save_file=true;
 conv_uint8=true;

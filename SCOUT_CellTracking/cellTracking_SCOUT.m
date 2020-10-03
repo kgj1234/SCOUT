@@ -293,7 +293,7 @@ data_shape=neurons{1}.imageSize;
 neuron=Sources2D;
 %Construct Sources2D object representing neurons over full recording
 %This is really slow, optimize later
-
+fields={'C','S','C_raw','C_df','S_df','trace'};
 A_per_session=zeros(size(neurons{1}.A,1),size(cell_register,1),length(neurons));
 for i=1:size(cell_register,1)
     
