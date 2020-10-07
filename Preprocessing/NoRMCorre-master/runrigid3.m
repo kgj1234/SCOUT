@@ -16,28 +16,33 @@ if ~exist('conv_uint8','var')||isempty(conv_uint8);
     conv_uint8=true;
 end
 gcp;
+Yfilter=single(Yfilter);
+Y=single(Y);
 
-%addpath(genpath('../../NoRMCorre'));
-% [path,name,ext]=fileparts(file);
-% if ischar(file)&isequal(ext,'.mat')
-%     Yf = struct2cell(load(file));
-%     Yf = single(Yf{1});
-% elseif ischar(file)&isequal(ext,'.avi')
-%     v=VideoReader(file);
-%     Yf=read(v);
-%     Yf=single(Yf);
-% elseif ischar(file)&(isequal(ext,'.tif')||isequal(ext,'.tiff'))
-%     Yf=loadtiff(file);
-% else
-%     Yf=single(file);
-% end
-% 
-% Y=Yf;
 
 T = size(Y,ndims(Y));
 d1=size(Y,1);
 d2=size(Y,2);
-
+if (0)    
+    hLarge = fspecial('average', 40);
+    hSmall = fspecial('average', 2); 
+    for t = 1:T
+        Y(:,:,t) = filter2(hSmall,Yf(:,:,t)) - filter2(hLarge, Yf(:,:,t));
+    end
+    %Ypc = Yf - Y;
+    bound = size(hLarge,1);
+else
+    gSig = 5; %%original 7
+    gSiz = 10; %%original 17
+    psf = fspecial('gaussian', round(gSiz), gSig);
+    ind_nonzero = (psf(:)>=max(psf(:,1)));
+    psf = psf-mean(psf(ind_nonzero));
+    psf(~ind_nonzero) = 0;   % only use pixels within the center disk
+    %Y = imfilter(Yf,psf,'same');
+    %bound = 2*ceil(gSiz/2);
+    Yfilter = imfilter(Yfilter,psf,'symmetric');
+    bound = 50;
+end
 bound=0;
 %% first try out rigid motion correction
     % exclude boundaries due to high pass filtering effects
