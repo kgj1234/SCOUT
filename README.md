@@ -34,8 +34,10 @@ A_per_session: spatial footprints of detected neurons in each session
 
 ## Requirements 
 MATLAB >2018a (untested for previous versions)  
+Image Processing Toolbox
 MATLAB C++ compiler  
 Tested on CentOS 7 and Windows
+Putty (For HPC on Windows)
 
 ## Pipeline
 1. Motion correct via NoRMCorre (demo_preprocessing.m demo)
