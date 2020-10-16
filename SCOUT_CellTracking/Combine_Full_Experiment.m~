@@ -27,9 +27,8 @@ for i=1:length(neurons)-1
     mid_value(i)=ceil(sum(global_extraction_parameters.batch_sizes{i}...
         (end-global_extraction_parameters.overlap_per_batch...
         +1:end))/2);
-    odd(i)=mod(sum(global_extraction_parameters.batch_sizes{i}...
-        (end-global_extraction_parameters.overlap_per_batch...
-        +1:end)),2);
+    odd=1-mod(sum(global_extraction_parameters.batch_sizes{i}...
+        (end-global_extraction_parameters.overlap_per_batch+1:end)),1)
     index(i)=sum(global_extraction_parameters.batch_sizes{i})-mid_value(i);
     
     links{i}=Sources2D;
@@ -56,9 +55,6 @@ try
 end
 
 for i=2:length(neurons)-1
-    if odd(i-1)
-        mid_value(i-1)=mid_value(i-1)-1;
-    end
     temp_neurons{i}=neurons{i}.copy();
     temp_neurons{i}.C=neurons{i}.C(:,mid_value(i-1)+1:end-mid_value(i));
     temp_neurons{i}.S=neurons{i}.S(:,mid_value(i-1)+1:end-mid_value(i));
@@ -68,9 +64,7 @@ for i=2:length(neurons)-1
         
     end
 end
-if odd(end)
-    mid_value(end)=mid_value(end)-1;
-end
+
 temp_neurons{end}=neurons{end}.copy();
 temp_neurons{end}.C=neurons{end}.C(:,mid_value(end)+1:end);
 temp_neurons{end}.S=neurons{end}.S(:,mid_value(end)+1:end);
@@ -83,11 +77,11 @@ else
         batch_size=global_extraction_parameters.batch_sizes{k};
         sess_length=sum(batch_size(1:length(batch_size)-global_extraction_parameters.overlap_per_batch));
         temp_neurons{k}=neurons{k}.copy();
-        temp_neurons{k}.C=neurons{k}.C(:,1:sess_length);
-        temp_neurons{k}.S=neurons{k}.S(:,1:sess_length);
+        temp_neurons{k}.C=neurons{end}.C(:,1:sess_length);
+        temp_neurons{k}.S=neurons{end}.S(:,1:sess_length);
         try
-            temp_neurons{k}.C_raw=neurons{k}.C_raw(:,1:sess_length);
-            temp_neurons{k}.C_df=neurons{k}.C_df(:,1:sess_length);
+            temp_neurons{k}.C_raw=neurons{end}.C_raw(:,1:sess_length);
+            temp_neurons{k}.C_df=neurons{end}.C_df(:,1:sess_length);
         end
     end
     temp_neurons{end+1}=neurons{end}.copy();

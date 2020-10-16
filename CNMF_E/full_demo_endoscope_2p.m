@@ -78,9 +78,9 @@ else
     gSiz=extraction_options.gSiz;
     
 end
-gSiz=gSiz/2;
+
 gSizMin=7;
-gSizMin=gSizMin/2;
+
 
 % minimum diameter of neurons in the image plane.
 neuron_full = Sources2D('d1',d1,'d2',d2, ... % dimensions of datasets
@@ -203,8 +203,8 @@ end
 spatial_filter_options.JS=JS;
 spatial_filter_options.data_shape=[neuron_ds.options.d1,neuron_ds.options.d2];
 spatial_filter_options.trim=false;
-spatial_filter_options.gSiz=gSiz;
-spatial_filter_options.gSizMin=gSizMin;
+spatial_filter_options.gSiz=ceil(gSiz/ssub);
+spatial_filter_options.gSizMin=(gSizMin/ssub);
 spatial_filter_options.filter=true;
 spatial_filter_options.threshold_per=[];
 spatial_filter_options.Ysignal=[];
@@ -409,8 +409,7 @@ neuron.orderROIs(srt);
 neuron_init = neuron.copy();
 
 
-gSiz=gSiz*2;
-gSizMin=gSizMin*2;
+
 spatial_filter_options.imageSize=[d1,d2];
 spatial_filter_options.gSiz=gSiz;
 spatial_filter_options.gSizMin=gSizMin;

@@ -159,13 +159,15 @@ for i=1:length(neurons)
 end
 end
 
-case
 if global_extraction_parameters.overlap_per_batch>0
-    
-     neuron=Combine_Full_Experiment(neurons,global_extraction_parameters,cell_tracking_options);
-    
-else
-    neuron=cellTracking_SCOUT(neurons,'links',[],'cell_tracking_options',cell_tracking_options);
+    if cell_tracking_options.overlap>0
+        neuron=Combine_Full_Experiment(neurons,global_extraction_parameters,cell_tracking_options);
+    else
+        for k=1:length(neurons)-1
+            batch_size=global_extraction_parameters.batch_sizes{k};
+            sess_length=sum(g
+            else
+            neuron=cellTracking_SCOUT(neurons,'links',[],'cell_tracking_options',cell_tracking_options);
 end
 
 save('neuron_SCOUT','neuron','-v7.3')
