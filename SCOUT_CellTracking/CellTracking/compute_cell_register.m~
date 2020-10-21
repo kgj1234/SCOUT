@@ -104,7 +104,7 @@ for i=1:length(pair_aligned)
         end
     end
    try
-    %    probabilities{i,i+1}=main_stochastic_optimization(pair_aligned{i},probabilities{i,i+1},min_prob);
+        probabilities{i,i+1}=main_stochastic_optimization(pair_aligned{i},probabilities{i,i+1},min_prob);
    end
     temp_prob=probabilities{i,i+1};
 

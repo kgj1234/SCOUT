@@ -24,7 +24,7 @@ for i=1:size(aligned_neurons,2)-2
         if isempty(max_sess_dist)||k-i<=max_sess_dist
         for j=1:size(aligned_neurons,1)
             if j<= size(aligned_neurons,1)
-                if ~iszero(aligned_neurons(j,k))&iszero(aligned_neurons(i,k))
+                if ~iszero(aligned_neurons(j,k))&iszero(aligned_neurons(j,i))
                     %Find and connect neuron chains separated by at least
                     %one recording
                     try

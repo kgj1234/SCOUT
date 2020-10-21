@@ -162,7 +162,7 @@ end
 case
 if global_extraction_parameters.overlap_per_batch>0
     
-     neuron=Combine_Full_Experiment(neurons,global_extraction_parameters,cell_tracking_options);
+    neuron=Combine_Full_Experiment(neurons,global_extraction_parameters,cell_tracking_options);
     
 else
     neuron=cellTracking_SCOUT(neurons,'links',[],'cell_tracking_options',cell_tracking_options);
