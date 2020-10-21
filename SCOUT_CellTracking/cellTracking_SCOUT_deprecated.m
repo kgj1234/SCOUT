@@ -1,4 +1,4 @@
-function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargin)
+function [neuron,cell_register,neurons,links]=cellTracking_SCOUT_deprecated(neurons,varargin)
 %Author: Kevin Johnston
 %Main function for cell registration between sessions
 %Inputs
@@ -173,6 +173,7 @@ if register_sessions
    for k=1:3
         [neurons,links]=register_neurons_links(neurons,links,registration_template,registration_type,registration_method,base);
         base=randi([1,length(neurons)],1,1);
+        %base=4;
    end
 end
 for i=1:length(neurons)
@@ -291,69 +292,71 @@ data_shape=neurons{1}.imageSize;
 
 
 neuron=Sources2D;
-
-total = 0;
-start=[];
-ends=[];
-for k=1:length(neurons)
-    start(k)=total+1;
-    total = total + size(neurons{k}.C,2); 
-    ends(k)=total;
-end
-
-neuron.C = zeros(size(cell_register, 1), total);
-neuron.C_raw = zeros(size(cell_register, 1), total);
-neuron.S = zeros(size(cell_register, 1), total);
-neuron.C_df = zeros(size(cell_register, 1), total);
-neuron.trace = zeros(size(cell_register,1),total);
-
-
 %Construct Sources2D object representing neurons over full recording
-
+%This is really slow, optimize later
+fields={'C','S','C_raw','C_df','S_df','trace'};
 A_per_session=zeros(size(neurons{1}.A,1),size(cell_register,1),length(neurons));
-A=zeros(size(neurons{1}.A,1),size(cell_register,1));
-identified=zeros(size(cell_register,1),1);
-decays=zeros(size(cell_register,1),1);
 tic
-for k=1:size(cell_register,2)
+for i=1:size(cell_register,1)
     
+    A=zeros(size(neurons{1}.A(:,1)));
     
-    
-    ind = cell_register(:,i)~=0;
-    index = find(ind);
-    identified=identified+ind;
-    if isprop(neurons{k}, 'C') && ~isempty(neurons{k}.C)
-       neuron.C(index, start(k):ends(k)) = neurons{k}.C(cell_register(ind,k),:); 
+    C={};
+    S={};
+    C_raw={};
+    for k=1:size(cell_register,2)
+        if ~iszero(cell_register(i,k))
+            C{k}=neurons{k}.C(cell_register(i,k),:);
+            try
+              C_raw{k}=neurons{k}.C_raw(cell_register(i,k),:);
+            end
+            try
+               C_df{k}=neurons{k}.C_df(cell_register(i,k),:);
+            end
+            try
+                S{k}=neurons{k}.S(cell_register(i,k),:);
+            end
+            A=A+neurons{k}.A(:,cell_register(i,k));
+            A_per_session(:,i,k)=neurons{k}.A(:,cell_register(i,k));
+        else
+            C{k}=zeros(1,size(neurons{k}.C,2));
+            try
+             C_raw{k}=zeros(1,size(neurons{k}.C,2));
+            
+            end
+            try
+                C_df{k}=zeros(1,size(neurons{k}.C_df,2));
+            end
+            try
+                S{k}=zeros(1,size(neurons{k}.C,2));
+            end
+        end
     end
     
-    if isprop(neurons{k}, 'C_raw') && ~isempty(neurons{k}.C_raw)
-        neuron.C_raw(index, start(k):ends(k)) = neurons{k}.C_raw(cell_register(ind, k),:);
+    
+    A=A/size(cell_register,2);
+    neuron.A=horzcat(neuron.A,A);
+    neuron.C=vertcat(neuron.C,horzcat(C{:}));
+    try
+        neuron.C_raw=vertcat(neuron.C_raw,horzcat(C_raw{:}));
     end
-    
-    if isprop(neurons{k}, 'C_df') && ~isempty(neurons{k}.C_df)
-        neuron.C_df(index, start(k):ends(k)) = neurons{k}.C_df(cell_register(ind, k),:);
+    try
+        neuron.C_df=vertcat(neuron.C_df,horzcat(C_df{:}));
     end
-    
-    if isprop(neurons{k}, 'S') && ~isempty(neurons{k}.S)
-        neuron.S(index, start(k):ends(k)) = neurons{k}.S(cell_register(ind, k),:);
+    try
+        neuron.S=vertcat(neuron.S,horzcat(S{:}));
     end
-    if isprop(neurons{k}, 'trace') && ~isempty(neurons{k}.trace)
-        neuron.trace(index, start(k):ends(k)) = neurons{k}.trace(cell_register(ind, k),:);
+    centroid=calculateCentroid(A,data_shape(1),data_shape(2));
+    neuron.centroid=vertcat(neuron.centroid,centroid);
+    decays=[];
+    try
+    for q=1:size(cell_register,2)
+        decays=[decays,neurons{q}.P.kernel_pars(cell_register(i,q))];
     end
-    
-    
-    A(:,index)=A(:,index)+neurons{k}.A(:,cell_register(ind,k));
-    A_per_session(:,index,k)=neurons{k}.A(:,cell_register(ind,k));
-    decays(index)=decays(index)+neurons{k}.P.kernel_pars(cell_register(ind,k));
-    
-    
+ 
+    neuron.P.kernel_pars(i,1)=mean(decays);
+    end
 end
-
-neuron.A=A./identified';
-neuron.P.kernel_pars=decays./identified;
-
-
-
 try
     neuron.Cn=neurons{base}.Cn;
 end
@@ -369,4 +372,7 @@ try
     neuron.options=neurons{1}.options;
 end
 
+%Eliminate remaining neurons falling below chain_prob
+neuron.A_per_session=A_per_session;
+neuron.delete(neuron.probabilities<chain_prob);
 toc
