@@ -285,7 +285,7 @@ base
 %% Construct Cell Register
 tic
 
-[cell_register,aligned_probabilities]=compute_cell_register(correlation_matrices,distance_links,distance_metrics,...
+[cell_register,aligned_probabilities]=compute_cell_register_adj(correlation_matrices,distance_links,distance_metrics,...
     similarity_pref,weights,probability_assignment_method,max_dist,max_gap,min_prob,single_corr,corr_thresh,use_spat,min_num_neighbors,chain_prob,binary_corr,max_sess_dist);
 toc
 %neurons=neurons1;

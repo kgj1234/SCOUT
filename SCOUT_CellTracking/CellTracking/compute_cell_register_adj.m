@@ -1,5 +1,6 @@
-function [aligned_neurons,aligned_probabilities]=compute_cell_register(correlation_matrices,distance_links,...
-    distance_metrics,similarity_pref,weights,method,max_dist,max_miss,min_prob,single_corr,corr_thresh,use_spatial,min_num_neighbors,chain_prob,binary_corr,max_sess_dist)
+function [aligned_neurons,aligned_probabilities]=compute_cell_register_adj(correlation_matrices,distance_links,...
+    distance_metrics,similarity_pref,weights,method,max_dist,max_miss,min_prob,single_corr,corr_thresh,use_spatial,min_num_neighbors,...
+chain_prob,binary_corr,max_sess_dist,penalty)
 
 
 %% Track cells through multiple recordings
@@ -57,19 +58,29 @@ if weights(1)==0
 else
     use_corr=true;
 end
+if ~exist('penalty','var')||isempty(penalty)
+    penalty=min_prob/2;
+end
+
 distance_vals=cell(size(distance_metrics));
 %Construct probabilities between consecutive recordings
 disp('Constructing Pairwise Distances Between Consecutive Sessions For All Metrics')
 for i=1:size(distance_metrics,1)
-  [pair_aligned{i},correlation{i},temp_dist{i},corr_prob{i},distance_prob{i}]=compute_aligned_pairwise_probability_single_full(...
+  [aligned{i,i+1},correlation{i},temp_dist{i},corr_prob{i},distance_prob{i},max_pixel_dist(i,i+1)]=compute_aligned_pairwise_probability_single_full(...
         correlation_matrices(2*i-1:2*i),distance_links(2*i-1:2*i),distance_metrics{i,i}{1},distance_metrics{i,i+1},...
         similarity_pref,max_dist,use_corr,single_corr,method,corr_thresh,min_num_neighbors,min_prob);
    
 end
+
+
+
 disp('Constructing Initial Tracking Matrices')
 %construct weighted identification probabilities, perform stochastic
 %update, normalized probabilities
-for i=1:length(pair_aligned)
+
+for i=1:size(distance_metrics,1)
+    
+ 
     distance_vals{i,i+1}=temp_dist{i};
     corr_prob{i}(isnan(corr_prob{i}))=0;
     if binary_corr
@@ -95,7 +106,7 @@ for i=1:length(pair_aligned)
     
     
     
-    pair_aligned{i}(ind_del,:)=[];
+    aligned{i,i+1}(ind_del,:)=[];
     
     probabilities{i,i+1}(ind_del)=[];
     for p=1:sum(weights(2:end)>0)
@@ -104,7 +115,7 @@ for i=1:length(pair_aligned)
         end
     end
    try
-        probabilities{i,i+1}=main_stochastic_optimization(pair_aligned{i},probabilities{i,i+1},min_prob);
+    %    probabilities{i,i+1}=main_stochastic_optimization(pair_aligned{i},probabilities{i,i+1},min_prob);
    end
     temp_prob=probabilities{i,i+1};
 
@@ -112,59 +123,19 @@ for i=1:length(pair_aligned)
     
     
     
-    pair_aligned{i}(ind_del,:)=[];
+    aligned{i,i+1}(ind_del,:)=[];
     
     probabilities{i,i+1}(ind_del)=[];
 end
-%Construct initial cell tracking matrix
-[aligned_neurons,aligned_probabilities]=...
-    align_neurons_pairwise(pair_aligned,probabilities,size_vec);
 
 
-%fill in missed neurons
-fill_in_iter=2;
-for j=1:fill_in_iter
-    
-    
-
-
-disp('Attempting To Fill In Gaps')
-try
-[aligned_neurons,aligned_probabilities]=...
-    align_neurons_fill_in(aligned_neurons,aligned_probabilities,pair_aligned,probabilities,min_prob);
+if ~use_spatial | length(aligned)==1
+    [aligned_neurons,aligned_probabilities]=...
+        construct_tracking_matrices_no_spatial(aligned,probabilities,size_vec,min_prob);
+    [aligned_neurons,aligned_probabilities]=...
+    Remove_Repeats_adj(aligned_neurons,aligned_probabilities,size_vec,use_spatial,probabilities,aligned,min_prob,distance_vals,max_miss,max_sess_dist,chain_prob);
 
 end
-
-%Update and order tracking matrices and probabilities
-for i=0:length(distance_metrics)
-    curr_ind=find(sum(iszero(aligned_neurons),2)==i);
-    
-    aligned_temp{i+1}=aligned_neurons(curr_ind,:);
-    aligned_prob_temp{i+1}=aligned_probabilities(curr_ind,:);
-    
-end
-
-aligned_neurons=vertcat(aligned_temp{:});
-aligned_probabilities=vertcat(aligned_prob_temp{:});
-
-
-
-
-end
-    
-
-
-
-for i=0:length(distance_metrics)
-    curr_ind=find(sum(iszero(aligned_neurons),2)==i);
-    
-    aligned_temp{i+1}=aligned_neurons(curr_ind,:);
-    aligned_prob_temp{i+1}=aligned_probabilities(curr_ind,:);
-    
-end
-
-aligned_neurons=vertcat(aligned_temp{:});
-aligned_probabilities=vertcat(aligned_prob_temp{:});
 
 
 if use_spatial&sum(weights(2:end))>0&length(distance_metrics)>2
@@ -182,9 +153,9 @@ for i=1:size(distance_metrics,1)
     corr_prob_temp=cell(size(spat_temp));
     dist_prob_temp=cell(size(spat_temp));
     temp_prob=cell(size(spat_temp));
-    for j=i+2:length(distance_metrics)
+    for j=i+2:min(length(distance_metrics),max_sess_dist+i)
         if isempty(max_sess_dist)||(j-i<=max_sess_dist)
-          [spat_temp{j},corr_temp{j},distance_temp_vals{j},corr_prob_temp{j},dist_prob_temp{j}]=compute_aligned_pairwise_probability_single_full(...
+          [spat_temp{j},corr_temp{j},distance_temp_vals{j},corr_prob_temp{j},dist_prob_temp{j},max_pixel_dist(i,j)]=compute_aligned_pairwise_probability_single_full(...
                 [],[],distance_metrics{i,i}{1},distance_metrics{i,j},...
                 similarity_pref,max_dist,false,single_corr,method,corr_thresh,min_num_neighbors);
             try
@@ -241,26 +212,20 @@ end
 
 for i=1:length(distance_metrics)
     for j=i+2:length(distance_metrics)
-        spat_aligned{i,j}=spat_aligned_temp{i}{j};
+        aligned{i,j}=spat_aligned_temp{i}{j};
         probabilities{i,j}=spat_prob{i}{j};
         distance_vals{i,j}=temp_vals{i}{j};
     end
 end
-if exist('spat_aligned','var')
-disp('Secondary Tracking Using Spatial Criterion')
-%Update chains based on probabilities between all recording pairs
-[aligned_neurons,aligned_probabilities]=align_via_spatial(aligned_neurons,aligned_probabilities,pair_aligned,spat_aligned,probabilities,min_prob,chain_prob,distance_vals,max_sess_dist);
-%[aligned_neurons,aligned_probabilities]=...
-%    align_neurons_fill_in(aligned_neurons,aligned_probabilities,pair_aligned,probabilities,min_prob);
-
-
-%Construct chain probabilities
-aligned_probabilities=construct_combined_probabilities(aligned_neurons,probabilities,pair_aligned,spat_aligned,distance_vals,min_prob,[],[],max_sess_dist);
+vals=max_pixel_dist(max_pixel_dist>0);
+max_pixel_dist(max_pixel_dist>prctile(vals,90))=prctile(vals,90);
+max_pixel_dist(max_pixel_dist<prctile(vals,10)&max_pixel_dist>0)=prctile(vals,10);
+max_pixel_dist=1.1*max_pixel_dist;
+[aligned_neurons,aligned_probabilities]=construct_tracking_matrices(aligned,probabilities,...
+    min_prob,chain_prob,distance_vals,max_sess_dist,size_vec,method,penalty,max_miss,max_pixel_dist,distance_metrics);
 end
 
 %Remove duplicate neurons from chains
-[aligned_neurons,aligned_probabilities]=...
-    Remove_Repeats(aligned_neurons,aligned_probabilities,size_vec,use_spatial,probabilities,pair_aligned,spat_aligned,min_prob,distance_vals,max_sess_dist);
 
 
 
@@ -268,19 +233,17 @@ end
 
 
 
-else
+
 
 if size(aligned_probabilities,2)>1    
     aligned_probabilities=min(aligned_probabilities,[],1);
 end
 
-[aligned_neurons,aligned_probabilities]=...
-    Remove_Repeats(aligned_neurons,aligned_probabilities,size_vec,use_spatial,probabilities,pair_aligned,[],min_prob,distance_vals,max_sess_dist);
 
 
    
 
-end
+
 
 
 
@@ -302,5 +265,4 @@ aligned_neurons(rem_ind,:)=[];
 aligned_probabilities(rem_ind,:)=[];
 
 
-
-
+end
