@@ -172,7 +172,7 @@ if register_sessions
    %3 alignment iterations
    for k=1:3
         [neurons,links]=register_neurons_links(neurons,links,registration_template,registration_type,registration_method,base);
-        base=randi([1,length(neurons)],1,1);
+        %base=randi([1,length(neurons)],1,1);
    end
 end
 for i=1:length(neurons)
@@ -252,7 +252,7 @@ end
 
 
 %Add additional metrics to the end of this cell. Make sure distance
-%matrices is the first element of the cell.
+%matrices is the first element of the cell, and overlap matrices the second.
 for i=1:size(distance_matrices,1)
     for j=1:size(distance_matrices,2)
         distance_metrics{i,j}={distance_matrices{i,j},overlap_matrices{i,j},JS_matrices{i,j},SNR_dist{i,j},decay_dist{i,j}};
@@ -269,16 +269,25 @@ end
 % First element should be low, corresponding to centroid distance.
 similarity_pref={'low','high','low','low','low'};
 similarity_pref(ind+1)=[];
-
+if weights(2)==0
+    weights(2)==mean(weights(weights>0));
+end
+if weights(3)==0
+    weights(3)==mean(weights(weights>0));
+end
 disp('Beginning Cell Tracking')
 
 %vector of weights for total metrics (including correlation) If no links are used,
 %set first elements of this vector to 0.
 weights=weights/sum(weights);
 min_num_neighbors=1.5;
+base
 %% Construct Cell Register
+tic
+
 [cell_register,aligned_probabilities]=compute_cell_register(correlation_matrices,distance_links,distance_metrics,...
     similarity_pref,weights,probability_assignment_method,max_dist,max_gap,min_prob,single_corr,corr_thresh,use_spat,min_num_neighbors,chain_prob,binary_corr,max_sess_dist);
+toc
 %neurons=neurons1;
 %links=links1;
 %% Construct Neuron Throughout Sessions Using Extracted Registration
@@ -314,12 +323,12 @@ A_per_session=zeros(size(neurons{1}.A,1),size(cell_register,1),length(neurons));
 A=zeros(size(neurons{1}.A,1),size(cell_register,1));
 identified=zeros(size(cell_register,1),1);
 decays=zeros(size(cell_register,1),1);
-tic
+
 for k=1:size(cell_register,2)
     
     
     
-    ind = cell_register(:,i)~=0;
+    ind = cell_register(:,k)~=0;
     index = find(ind);
     identified=identified+ind;
     if isprop(neurons{k}, 'C') && ~isempty(neurons{k}.C)
@@ -351,7 +360,7 @@ end
 
 neuron.A=A./identified';
 neuron.P.kernel_pars=decays./identified;
-
+neuron.A_per_session=A_per_session;
 
 
 try
@@ -369,4 +378,5 @@ try
     neuron.options=neurons{1}.options;
 end
 
-toc
+neuron.delete(neuron.probabilities<chain_prob);
+
