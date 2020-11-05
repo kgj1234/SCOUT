@@ -116,6 +116,7 @@ warning('off','all');
 bins=0:.05:max(NN_distance{1});
 bins=bins(1:end-1)+.025;
 bw=optimal_bandwidth(NN_distance{1});
+NN_distance{1}=NN_distance{1}+10^(-10); %ksdensity requires positivity
 approx_dist=ksdensity(NN_distance{1},bins,'boundary','reflection','Support','positive','Bandwidth',bw);
 
 if length(NN_distance{1})>0 

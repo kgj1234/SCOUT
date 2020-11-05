@@ -1,6 +1,6 @@
 function [aligned_neurons,aligned_probabilities]=compute_cell_register_adj(correlation_matrices,distance_links,...
     distance_metrics,similarity_pref,weights,method,max_dist,max_miss,min_prob,single_corr,corr_thresh,use_spatial,min_num_neighbors,...
-chain_prob,binary_corr,max_sess_dist,penalty)
+chain_prob,binary_corr,max_sess_dist,centroids,penalty)
 
 
 %% Track cells through multiple recordings
@@ -131,7 +131,7 @@ end
 
 if ~use_spatial | length(aligned)==1
     [aligned_neurons,aligned_probabilities]=...
-        construct_tracking_matrices_no_spatial(aligned,probabilities,size_vec,min_prob);
+        construct_tracking_matrices_no_spatial(aligned,probabilities,size_vec,min_prob,distance_metrics);
     [aligned_neurons,aligned_probabilities]=...
     Remove_Repeats_adj(aligned_neurons,aligned_probabilities,size_vec,use_spatial,probabilities,aligned,min_prob,distance_vals,max_miss,max_sess_dist,chain_prob);
 
@@ -217,12 +217,29 @@ for i=1:length(distance_metrics)
         distance_vals{i,j}=temp_vals{i}{j};
     end
 end
+
+
 vals=max_pixel_dist(max_pixel_dist>0);
 max_pixel_dist(max_pixel_dist>prctile(vals,90))=prctile(vals,90);
 max_pixel_dist(max_pixel_dist<prctile(vals,10)&max_pixel_dist>0)=prctile(vals,10);
-max_pixel_dist=1.1*max_pixel_dist;
+max_pixel_dist=1.5*max_pixel_dist;
+max_pixel_dist(end+1,:)=0;
+for l=1:size(max_pixel_dist,1)
+    for q=l+1:size(max_pixel_dist,2)
+        if max_pixel_dist(l,q)==0
+            temp=[max_pixel_dist(l,:),max_pixel_dist(:,q)'];
+            temp(temp==0)=[];
+            max_pixel_dist(l,q)=mean(temp);
+        end
+    end
+end
+max_pixel_dist=max_pixel_dist+max_pixel_dist';
+for l=1:size(max_pixel_dist,2)
+    max_pixel_dist(l,l)=(sum(max_pixel_dist(l,l+1:end))+sum(max_pixel_dist(1:l-1,l)))/(size(max_pixel_dist,2)-1);
+end
 [aligned_neurons,aligned_probabilities]=construct_tracking_matrices(aligned,probabilities,...
-    min_prob,chain_prob,distance_vals,max_sess_dist,size_vec,method,penalty,max_miss,max_pixel_dist,distance_metrics);
+    min_prob,chain_prob,distance_vals,max_sess_dist,size_vec,method,penalty,max_miss,max_pixel_dist,distance_metrics,centroids);
+
 end
 
 %Remove duplicate neurons from chains
@@ -236,7 +253,9 @@ end
 
 
 if size(aligned_probabilities,2)>1    
-    aligned_probabilities=min(aligned_probabilities,[],1);
+    aligned_probabilities(aligned_probabilities==0)=nan;
+    aligned_probabilities=min(aligned_probabilities,[],2,'omitnan');
+    aligned_probabilities(isnan(aligned_probabilities))=0;
 end
 
 

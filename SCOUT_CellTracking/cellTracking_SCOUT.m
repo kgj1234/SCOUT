@@ -170,7 +170,7 @@ end
 
 if register_sessions
    %3 alignment iterations
-   for k=1:3
+   for k=1
         [neurons,links]=register_neurons_links(neurons,links,registration_template,registration_type,registration_method,base);
         %base=randi([1,length(neurons)],1,1);
    end
@@ -281,12 +281,16 @@ disp('Beginning Cell Tracking')
 %set first elements of this vector to 0.
 weights=weights/sum(weights);
 min_num_neighbors=1.5;
-base
+
+for k=1:length(neurons)
+    centroids{k}=neurons{k}.centroid;
+end
+
 %% Construct Cell Register
 tic
 
 [cell_register,aligned_probabilities]=compute_cell_register_adj(correlation_matrices,distance_links,distance_metrics,...
-    similarity_pref,weights,probability_assignment_method,max_dist,max_gap,min_prob,single_corr,corr_thresh,use_spat,min_num_neighbors,chain_prob,binary_corr,max_sess_dist);
+    similarity_pref,weights,probability_assignment_method,max_dist,max_gap,min_prob,single_corr,corr_thresh,use_spat,min_num_neighbors,chain_prob,binary_corr,max_sess_dist,centroids);
 toc
 %neurons=neurons1;
 %links=links1;

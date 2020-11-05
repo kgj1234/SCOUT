@@ -1,5 +1,5 @@
 function [aligned_neurons,aligned_probabilities]=construct_tracking_matrices(aligned,probabilities,...
-    min_prob,chain_prob,dist_vals,max_sess_dist,size_vec,method,penalty,max_gap,max_pixel_dist,distance_metrics,centroids)
+    min_prob,chain_prob,dist_vals,max_sess_dist,size_vec,method,penalty,max_gap,max_pixel_dist,distance_metrics)
 
 
 disp('Tracking Using Spatial Criterion')
@@ -15,7 +15,7 @@ for k=1:length(avail)-1
     
         [temp_aligned,temp_probabilities,avail]=construct_aligned_neuron_graph_new(aligned,...
             probabilities,avail{k}(1),k,avail,size_vec,dist_vals,min_prob,...
-            [],penalty,max_sess_dist,chain_prob,max_gap,max_pixel_dist,distance_metrics,centroids);
+            [],penalty,max_sess_dist,chain_prob,max_gap,max_pixel_dist,distance_metrics);
         aligned_neurons=[aligned_neurons;temp_aligned];
         aligned_probabilities=[aligned_probabilities;temp_probabilities];
     end
@@ -28,8 +28,3 @@ if max_gap>=length(avail)-1
     aligned_neurons=[aligned_neurons;temp_aligned];
     aligned_probabilities=[aligned_probabilities;temp_prob];
 end
-
-[aligned_neurons,aligned_probabilities]=...
-            Remove_Repeats_adj(aligned_neurons,aligned_probabilities,...
-            size_vec,true,probabilities,aligned,min_prob,dist_vals,...
-        max_gap,max_sess_dist,chain_prob);

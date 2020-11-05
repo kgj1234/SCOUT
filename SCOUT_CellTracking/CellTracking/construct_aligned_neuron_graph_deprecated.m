@@ -36,8 +36,8 @@ for k=1:size(curr_dist,1)
     for j=k+1:size(curr_dist,2)
         matrix=zeros(length(graph_elements{k}),length(graph_elements{j}));
         matrix1=ones(size(matrix));
-        for p=2:size(matrix,1)
-            for q=2:size(matrix,2);
+        for p=1:size(matrix,1)
+            for q=1:size(matrix,2);
                 matrix(p,q)=distance_metrics{k,j}{1}(graph_elements{k}(p),graph_elements{j}(q));
                 matrix1(p,q)=distance_metrics{k,j}{2}(graph_elements{k}(p),graph_elements{j}(q));
                
@@ -53,6 +53,7 @@ end
 for k=1:length(graph_elements)
     element_length(k)=length(graph_elements{k});
 end
+
 
 aligned_neurons=cell(sum(element_length),1);
 parfor l=1:(sum(element_length))

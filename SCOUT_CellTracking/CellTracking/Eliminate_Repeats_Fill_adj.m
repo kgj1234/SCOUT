@@ -50,17 +50,33 @@ for i=max(num_sess):-1:1
             aligned_probabilities(num_sess==0,:)=[];
             [aligned_neurons,aligned_probabilities]=Eliminate_Duplicates(aligned_neurons,aligned_probabilities);
             [aligned_neurons,aligned_probabilities]=mergeNeurons_adj(aligned_neurons,aligned_probabilities);
-            num_sess=sum(~iszero(aligned_neurons),2);
+            
             if use_spat
                 aligned_probabilities=construct_combined_probabilities_adj(aligned_neurons,probabilities,aligned,dist_vals,min_prob,[],[],max_sess_dist);
             elseif ~isempty(probabilities)
-                aligned_probabilities=construct_consecutive_probabilities(aligned_neurons,probabilities,pair_aligned);
+                aligned_probabilities=construct_consecutive_probabilities(aligned_neurons,probabilities,aligned);
             end
             rem_ind=find(aligned_probabilities<chain_prob);
-            aligned_probabilities(rem_ind)=[];
+            
+            clear temp_aligned;
+            parfor k=1:length(rem_ind)
+                temp_aligned{k}=split_cell_register(aligned_neurons(rem_ind(k),:),probabilities,aligned,dist_vals,min_prob,[],[],max_sess_dist,use_spat,chain_prob);
+            end
+            
+           
             aligned_neurons(rem_ind,:)=[];
-            num_sess=sum(~iszero(aligned_neurons),2);
+            try
+                aligned_neurons=[aligned_neurons;cat(1,temp_aligned{:})];
+            end
+            if use_spat
+                aligned_probabilities=construct_combined_probabilities_adj(aligned_neurons,probabilities,aligned,dist_vals,min_prob,[],[],max_sess_dist);
+            elseif ~isempty(probabilities)
+                aligned_probabilities=construct_consecutive_probabilities(aligned_neurons,probabilities,aligned);
+            end
+            [aligned_neurons,aligned_probabilities]=Eliminate_Duplicates(aligned_neurons,aligned_probabilities);
          
+            num_sess=sum(~iszero(aligned_neurons),2);
+            
         end
     end
 end

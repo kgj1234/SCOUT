@@ -1,6 +1,6 @@
 function [aligned_neurons,aligned_probabilities]=...
-    construct_tracking_matrices_no_spatial(aligned,probabilities,size_vec,min_prob,distance_metrics)
-
+    construct_tracking_matrices_no_spatial(aligned,probabilities,size_vec,min_prob)
+clear i
 
 disp('Constructing Initial Tracking Matrices')
 
@@ -16,8 +16,8 @@ for j=1:fill_in_iter
     
 
 pair_aligned={};
-for k=1:length(aligned)-1
-    pair_aligned{k}=aligned{k,k+1};
+for k=1:length(aligned)
+    pair_aligned{i}=aligned{i,i+1};
 end
 disp('Attempting To Fill In Gaps')
 try
@@ -47,10 +47,10 @@ end
 
 
 for k=0:length(distance_metrics)
-    curr_ind=find(sum(iszero(aligned_neurons),2)==k);
+    curr_ind=find(sum(iszero(aligned_neurons),2)==i);
     
-    aligned_temp{k+1}=aligned_neurons(curr_ind,:);
-    aligned_prob_temp{k+1}=aligned_probabilities(curr_ind,:);
+    aligned_temp{i+1}=aligned_neurons(curr_ind,:);
+    aligned_prob_temp{i+1}=aligned_probabilities(curr_ind,:);
     
 end
 
