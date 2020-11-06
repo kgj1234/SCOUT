@@ -129,7 +129,7 @@ for i=1:size(distance_metrics,1)
 end
 
 
-if ~use_spatial | length(aligned)==1
+if ~use_spatial | length(aligned)==2
     [aligned_neurons,aligned_probabilities]=...
         construct_tracking_matrices_no_spatial(aligned,probabilities,size_vec,min_prob,distance_metrics);
     [aligned_neurons,aligned_probabilities]=...
