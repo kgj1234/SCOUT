@@ -6,7 +6,7 @@ SCOUT_loc_host='~/SCOUT/'; %SCOUT location on host (SCOUT should be at this loca
 Host_data_dir='/pub/kgjohnst'; %Base data storage directory on host
 
 %folder with video files on local computer
-%extraction_folder='./layer2/';
+extraction_folder='../Demos/';
 
 
 
@@ -30,7 +30,7 @@ for k=1:length(vids)
 end
 
 
-options_ext='HPC_code/full_pipeline/full_pipeline_options.txt';
+options_ext=fullfile('HPC_code','full_pipeline','full_pipeline_options.txt');
 
 
 
