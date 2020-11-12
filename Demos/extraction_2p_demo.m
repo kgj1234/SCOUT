@@ -21,16 +21,16 @@
 
 %%
 clear all
-filename='./data_2p.tif'; %No ground truth available
+filename='./sample_2p_data/data_2p.mat'; %No ground truth available
 extraction_options.indices=[];
 
-extraction_options.min_pnr=5;
+extraction_options.min_pnr=8;
 extraction_options.gSiz=15;
 extraction_options.max_neurons=400;
 extraction_options.min_corr=.5;
-extraction_options.corr_noise=false;
+extraction_options.corr_noise=.001;
 extraction_options.JS=0; %No spatial filter available yet
-extraction_options.res_extract=false;
+extraction_options.res_extract=true;
 
 
 %%
