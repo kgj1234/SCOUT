@@ -71,7 +71,7 @@ end
 Fs = 15;             % frame rate
 % spatial downsampling factor
 % temporal downsampling factor
-gSig = 2;           % width of the gaussian kernel, which can approximates the average neuron shape
+gSig = 3;           % width of the gaussian kernel, which can approximates the average neuron shape
 if ~isfield(extraction_options,'gSiz')||isempty(extraction_options)
     gSiz = 24;          % maximum diameter of neurons in the image plane. larger values are preferred.
 else
@@ -186,7 +186,11 @@ neuron_full.updateParams('min_corr', min_corr, 'min_pnr', min_pnr, ...
     'background_model',bg_model,'ring_radius',ring_radius,'center_psf',false);
 neuron.options.nk = 5;  % number of knots for detrending
 neuron.options.init_method='min_corr';
+%
 
+
+
+neuron.options.center_psf=true; %Apply smoothing filter to data prior to pixel seeding. This setting may need to change.
 % greedy method for initialization
 
 %Add noise to correlation image? (If so, reduce min_corr threshold)
