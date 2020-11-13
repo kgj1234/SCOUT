@@ -61,7 +61,7 @@ if (ssub~=1) || (tsub~=1)
 end
 min_corr = options.min_corr;    %minimum local correlations for determining seed pixels
 min_pnr = options.min_pnr;               % peak to noise ratio for determining seed pixels
-min_v_search = min_corr*min_pnr;
+
 seed_method = options.seed_method; % methods for selecting seed pixels
 if strcmpi(seed_method, 'manual')
     min_corr = min_corr/2;
@@ -151,6 +151,15 @@ end
 Cn0 = Cn;   % backup
 Cn(isnan(Cn)) = 0;
 % Cn = Cn + randn(size(Cn))*(1e-100);
+%remove boundary values
+Cn([1:round(gSiz/2),end-round(gSiz/2)+1:end],:)=0;
+Cn(:,[1:round(gSiz/2),end-round(gSiz/2)+1:end])=0;
+PNR([1:round(gSiz/2),end-round(gSiz/2)+1:end],:)=0;
+PNR(:,[1:round(gSiz/2),end-round(gSiz/2)+1:end])=0;
+if isequal(min_corr,'auto')|isequal(min_pnr,'auto')
+    [min_pnr,min_corr]=auto_select_seed_param(Cn,PNR,.4);
+end
+min_v_search = min_corr*min_pnr;
 
 % screen seeding pixels as center of the neuron
 v_search = Cn.*PNR;v_search(or(Cn<min_corr, PNR<min_pnr)) = 0;
