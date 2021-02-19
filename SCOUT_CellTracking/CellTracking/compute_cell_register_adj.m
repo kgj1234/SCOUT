@@ -1,6 +1,6 @@
 function [aligned_neurons,aligned_probabilities]=compute_cell_register_adj(correlation_matrices,distance_links,...
     distance_metrics,similarity_pref,weights,method,max_dist,max_miss,min_prob,single_corr,corr_thresh,use_spatial,min_num_neighbors,...
-chain_prob,binary_corr,max_sess_dist,centroids,penalty)
+chain_prob,binary_corr,max_sess_dist,centroids,scale_factor,reconstitute,penalty)
 
 
 %% Track cells through multiple recordings
@@ -222,7 +222,7 @@ end
 vals=max_pixel_dist(max_pixel_dist>0);
 max_pixel_dist(max_pixel_dist>prctile(vals,90))=prctile(vals,90);
 max_pixel_dist(max_pixel_dist<prctile(vals,10)&max_pixel_dist>0)=prctile(vals,10);
-max_pixel_dist=1.5*max_pixel_dist;
+max_pixel_dist=scale_factor*max_pixel_dist;
 max_pixel_dist(end+1,:)=0;
 for l=1:size(max_pixel_dist,1)
     for q=l+1:size(max_pixel_dist,2)
@@ -238,12 +238,9 @@ for l=1:size(max_pixel_dist,2)
     max_pixel_dist(l,l)=(sum(max_pixel_dist(l,l+1:end))+sum(max_pixel_dist(1:l-1,l)))/(size(max_pixel_dist,2)-1);
 end
 [aligned_neurons,aligned_probabilities]=construct_tracking_matrices(aligned,probabilities,...
-    min_prob,chain_prob,distance_vals,max_sess_dist,size_vec,method,penalty,max_miss,max_pixel_dist,distance_metrics,centroids);
+    min_prob,chain_prob,distance_vals,max_sess_dist,size_vec,method,penalty,max_miss,max_pixel_dist,distance_metrics,centroids,reconstitute);
 
 end
-
-%Remove duplicate neurons from chains
-
 
 
  

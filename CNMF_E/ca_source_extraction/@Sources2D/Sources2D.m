@@ -46,7 +46,7 @@ classdef Sources2D < handle
         trialNum;
         num_batches;
         probabilities;
-        normalized_probabilities;
+        connectiveness;
 
         cell_register; 
         existant_indices; %DEPRECATED
@@ -869,6 +869,7 @@ classdef Sources2D < handle
            try obj.overlap_prob_normalized(ind,:)=[]; catch; end
            try obj.dist_prob_normalized(ind,:)=[]; catch; end
            try obj.cell_register(ind,:)=[]; catch; end
+           try obj.connectiveness(ind,:)=[]; catch; end
            try
                
                    obj.A_per_session(:,ind,:)=[];

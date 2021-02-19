@@ -1,4 +1,4 @@
-function [results, center, Cn, PNR, save_avi] = greedyROI_endoscope(Y, K, options,debug_on, save_avi)
+function [results, center, Cn, PNR, save_avi,options] = greedyROI_endoscope(Y, K, options,debug_on, save_avi)
 %% a greedy method for detecting ROIs and initializing CNMF. in each iteration,
 % it searches the one with large (peak-median)/noise level and large local
 % correlation. It's the same with greedyROI_corr.m, but with some features
@@ -157,7 +157,9 @@ Cn(:,[1:round(gSiz/2),end-round(gSiz/2)+1:end])=0;
 PNR([1:round(gSiz/2),end-round(gSiz/2)+1:end],:)=0;
 PNR(:,[1:round(gSiz/2),end-round(gSiz/2)+1:end])=0;
 if isequal(min_corr,'auto')|isequal(min_pnr,'auto')
-    [min_pnr,min_corr]=auto_select_seed_param(Cn,PNR,.4);
+    [min_pnr,min_corr]=auto_select_seed_param(Cn,PNR,.3);
+    options.min_pnr=3/4*min_pnr;
+    options.min_corr=3/4*min_corr;
 end
 min_v_search = min_corr*min_pnr;
 

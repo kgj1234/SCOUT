@@ -35,6 +35,7 @@ if strcmpi(file_type, '.mat')
             Y=load(nam,vars{q});
             Y=getfield(Y,vars{q});
             Y=squeeze(max(Y,[],3));
+            
             Ysiz=size(Y);
             save([dir_nm, filesep, file_nm, '_projection.mat'],'Y','Ysiz','-v7.3')
             nam_mat=[dir_nm, filesep, file_nm, '_projection.mat'];
@@ -63,6 +64,7 @@ elseif strcmpi(file_type, '.avi')
     Ysiz=size(Y);
     if length(Ysiz)>3
         Y=squeeze(max(Y,[],3));
+        Y=imresize(Y,[512/2,702/2]);
         Ysiz=size(Y);
     end
     save([dir_nm,filesep,file_nm],'Y','Ysiz','-v7.3')

@@ -1,7 +1,7 @@
 
 function [aligned_neurons,aligned_probabilities,rem_ind]=...
     Remove_Repeats_adj(aligned_neurons,aligned_probabilities,size_vec,...
-    use_spat,probabilities,aligned,min_prob,dist_vals,max_gap,max_sess_dist,chain_prob)
+    use_spat,probabilities,aligned,min_prob,dist_vals,max_gap,max_sess_dist,chain_prob,reconstitute)
 
 
 
@@ -49,6 +49,10 @@ end
 if ~exist('min_prob','var')||isempty(use_spat)
     min_prob=.5;
 end
+if ~exist('reconstitute','var')||isempty(reconstitute)
+    reconstitute=true;
+end
+
 
 
 %% Remove Repeats
@@ -57,7 +61,7 @@ if size(aligned_probabilities,2)>1
     aligned_neurons(rem_ind,:)=[];
     aligned_probabilities(rem_ind,:)=[];
 else
-    [aligned_neurons,aligned_probabilities]=Eliminate_Repeats_Fill_adj(aligned_neurons,aligned_probabilities,use_spat,probabilities,aligned,min_prob,dist_vals,max_gap,max_sess_dist,chain_prob);
+    [aligned_neurons,aligned_probabilities]=Eliminate_Repeats_Fill_adj(aligned_neurons,aligned_probabilities,use_spat,probabilities,aligned,min_prob,dist_vals,max_gap,max_sess_dist,chain_prob,reconstitute);
     rem_ind=[];
 end
 

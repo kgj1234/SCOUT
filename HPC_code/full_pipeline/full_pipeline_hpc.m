@@ -3,8 +3,8 @@ disp('base_dir')
 disp(base_dir)
 
 try
-    data=txt_parser(fullfile(base_dir,'full_pipeline_options.txt'));
-
+    %data=txt_parser(fullfile(base_dir,'full_pipeline_options.txt'));
+    data=txt_parser('full_pipeline_options.txt');
     disp('Detected options folder in base directory')
 catch
     data=txt_parser('~/SCOUT/HPC_code/full_pipeline/full_pipeline_options.txt');
@@ -36,7 +36,7 @@ for k=1:length(filename)
 	iter=1;
 	while iter<10
             try
-		filename{k}
+                filename{k}
                 m=background_subtraction(filename{k});
                 break
             catch ME

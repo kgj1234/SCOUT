@@ -2,16 +2,16 @@
 
 vids_per_batch=1
 overlap_per_batch=0
-data_type='2p'
-threads=3
+data_type='1p'
+threads=4
 save_file=true;
 conv_uint8=true;
 
-motion_correct=true
+motion_correct=true;
 background_subtract=true;
-from_filtered=true;
+from_filtered=false;
 register_sessions=false;
-extract_videos=true
+extract_videos=false;
 
-extraction_options={'JS',.11,'gSiz',25,'max_neurons',250,'corr_noise',true,'min_corr',.3}
-cell_tracking_options={'max_dist',45,'alignment_method',{'similarity','non-rigid'},'overlap',0}
+extraction_options={'JS',.11,'gSiz',25,'max_neurons',300,'corr_noise',true,'min_corr',.3}
+cell_tracking_options={'max_dist',45,'alignment_method',{'similarity','non-rigid'},'overlap',2000}

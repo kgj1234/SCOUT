@@ -1,4 +1,5 @@
-function [aligned_neurons,aligned_probabilities]=mergeNeurons_adj(aligned_neurons,aligned_probabilities);
+function [aligned_neurons,aligned_probabilities]=mergeNeurons_adj(aligned_neurons,...
+    aligned_probabilities,probabilities,aligned,dist_vals,min_prob,method,penalty,max_sess_dist,use_spat,chain_prob);
 %Merge neuron chains if every common element between chains is the same
 
 
@@ -25,15 +26,21 @@ parfor i=1:size(aligned_neurons,1)
                 new_neurons(:,pos_ind)=repmat(aligned_neurons(i,pos_ind),length(ind),1);
                 new_prob=zeros(length(ind),size(aligned_probabilities,2));
                 [new_neurons,new_prob]=Eliminate_Duplicates(new_neurons,new_prob);
+                if use_spat
+                    new_prob=construct_combined_probabilities_adj(new_neurons,probabilities,aligned,dist_vals,min_prob,[],[],max_sess_dist);
+                elseif ~isempty(probabilities)
+                    new_prob=construct_consecutive_probabilities(new_neurons,probabilities,aligned);
+                end
+                new_neurons(new_prob<chain_prob,:)=[];
                 temp_aligned{i}=new_neurons;
-                
-            end
+            end   
+        end
        
-        %end
+      
     
     end
     
-end
+
 aligned_neurons=[aligned_neurons;vertcat(temp_aligned{:})];
 aligned_probabilities(end+1:size(aligned_neurons,1))=0;
 [aligned_neurons,aligned_probabilities]=Eliminate_Duplicates(aligned_neurons,aligned_probabilities);

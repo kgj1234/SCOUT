@@ -3,13 +3,15 @@ if normalize
     template=template_norm;
     base_template=base_template_norm;
 end
-
+template=double(template);
+base_template=double(base_template);
 R=imref2d(neuron.imageSize);
 
 [optimizer, metric]=imregconfig('monomodal');
 iter=1;
 registrations={};
 curr_template=template;
+
 curr_mse=MSE_registration_metric(curr_template,base_template);
 while iter<=length(registration_method);
     if isequal(registration_method{iter},'translation')||isequal(registration_method{iter},'affine')
@@ -83,6 +85,17 @@ parfor j=1:size(neuron.A,2)
             
     end
 end
+tempcn=double(neuron.Cn);
+for k=1:length(registrations)
+    if isequal(class(registrations{k}),'affine2d')
+            tform=registrations{k};
+            tempcn=imwarp(tempcn,tform,'OutputView',R);
+        elseif isequal(class(registrations{1}),'struct')
+            registration=registrations{k};
+            tempcn=deformation(tempcn,registration.displacementField,registration.interpolation);
+    end
+end
+neuron.Cn=tempcn;
 neuron.A=reshape(temp_A,neuron.imageSize(1)*neuron.imageSize(2),[]);
 neuron.A(neuron.A<10^(-6))=0;
 mse=curr_mse;

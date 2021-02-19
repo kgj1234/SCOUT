@@ -9,9 +9,10 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 %               registration. Cell of Sources2D structs
 
 %  overlap: (int) temporal overlap between connecting sessions
-%  max_dist: (float) max distance between registered neurons between sessions
-%  weights: (vector) weights for linking methods. 4 element numeric vector. Order correlation, JS, overlap, centroid dist
-%  chain_prob: (float range [0,1]) Total probability threshold for neuron chains, numeric value between 0 and 1
+%  max_dist: (float (or vector of floats) ) max distance between registered neurons
+%       between sessions (multiple entries will return multiple cell registers)
+%  weights: (vector (or matrix, each row corresponding to a weight set)) weights for linking methods. 4 element numeric vector. Order correlation, JS, overlap, centroid dist
+%  chain_prob: (float or vector of floats range [0,1]) Total probability threshold for neuron chains, numeric value between 0 and 1
 %  corr_thresh (float range [0,1]) Probability threshold for correlation link
 %               between neurons, numeric value between 0 and 1. Usually 0
 %               unless binary_corr is true
@@ -37,7 +38,7 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 %   probability_assignment_method: (str) either 'percentile', 'gmm',
 %       'gemm','glmm' 'default' or 'Kmeans'
 %   base: (int range [1,length(neurons)]) base session for alignment
-%   min_prob: (float, range [0,1]) minimum probability for identification between
+%   min_prob: (float or vector of floats, range [0,1]) minimum probability for identification between
 %   sessions
 %   binary_corr: (bool) treat correlation on connecting recordings as binary
 %      variable
@@ -48,6 +49,9 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 %   single_corr (bool) use this if correlation is to be calculated only on
 %       the second recording in each consecutive pair (this should almost
 %       always be false)
+%   scale_factor (positive float) Controls search radius for cell tracking lower to constrain search parameters.
+%   reconstitute (bool) determine whether to reconstitute neuron chains.
+%       Set to false if cell tracking many sessions (>15)
 %   cell_tracking_options (struct) with fields that contains some or all previously stated optional
     %   parameters
 % Outputs
@@ -58,11 +62,11 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 
 
 %% Assign variables
-
+tic
 optional_parameters={'links','weights','max_dist','overlap','chain_prob','corr_thresh','register_sessions','registration_type','registration_method',...
     'registration_template','use_corr','use_spat','max_gap','probability_assignment_method','base','min_prob','binary_corr','max_sess_dist',...
-    'footprint_threshold','cell_tracking_options','single_corr'};
-defaults={{},[4,5,5,0,0,0],45,[],.5,.7,true,'align_to_base',{'affine','non-rigid'},'spatial',false,true,0,'Kmeans',ceil(length(neurons)/2),.5,false,20,.1,struct,false};
+    'footprint_threshold','cell_tracking_options','single_corr','scale_factor','reconstitute'};
+defaults={{},[4,5,5,0,0,0],[45],[],[.5],.7,true,'align_to_base',{'affine','non-rigid'},'spatial',false,true,0,'Kmeans',ceil(length(neurons)/2),[.5],false,20,.1,struct,false,1.5,true};
 
 p=inputParser;
 
@@ -81,7 +85,7 @@ for i=1:length(p.Parameters)
     eval([p.Parameters{i},'=val',';'])
 end
 if isempty(links)
-    weights(1)=0;
+    weights(:,1)=0;
     overlap=0;
     corr_thresh=[];
     links=[];
@@ -89,7 +93,8 @@ end
 if isequal(registration_template,'correlation')&isempty(neurons{1}.Cn)
     registration_template='spatial';
 end
-if weights(1)==0
+max_weights=max(weights,[],1);
+if max_weights(1)==0
     links=[];
     overlap=0;
     corr_thresh=[];
@@ -170,9 +175,9 @@ end
 
 if register_sessions
    %3 alignment iterations
-   for k=1
+   for k=1:3
         [neurons,links]=register_neurons_links(neurons,links,registration_template,registration_type,registration_method,base);
-        %base=randi([1,length(neurons)],1,1);
+        base=randi([1,length(neurons)],1,1);
    end
 end
 for i=1:length(neurons)
@@ -198,14 +203,13 @@ end
 
 %Insert any new distance metrics below, and add them to the
 %distance_metrics cell
-
 %Weights order: correlation, centroid_dist,overlap,JS,SNR,decay
-%overlap similarity
-if weights(3)>0
-    overlap_matrices=construct_overlap_matrix(neurons);
-else
-    overlap_matrices=cell(length(neurons)-1,length(neurons));
-end
+
+
+
+%overlap similarity, now required
+overlap_matrices=construct_overlap_matrix(neurons);
+
 
 %centroid distance (this metric is required, though  the weight may be 0)
 distance_matrices=construct_distance_matrix(neurons);
@@ -226,12 +230,12 @@ for i=1:length(neurons)-1
 end
 
 %JS distance
-if weights(4)>0
-    JS_matrices=construct_JS_matrix(neurons,max_dist,max_sess_dist);
+if max_weights(4)>0
+    JS_matrices=construct_JS_matrix(neurons,max_sess_dist,overlap_matrices);
 else
     JS_matrices=cell(length(neurons)-1,length(neurons));
 end
-if weights(5)>0
+if max_weights(5)>0
 for i=1:length(neurons)
     for j=i:length(neurons)
         SNR_dist{i,j}=pdist2(neurons{i}.SNR,neurons{j}.SNR)./((repmat(neurons{i}.SNR,1,size(neurons{j}.SNR,1))+repmat(neurons{j}.SNR',size(neurons{i}.SNR,1),1))/2);
@@ -256,8 +260,8 @@ end
 for i=1:size(distance_matrices,1)
     for j=1:size(distance_matrices,2)
         distance_metrics{i,j}={distance_matrices{i,j},overlap_matrices{i,j},JS_matrices{i,j},SNR_dist{i,j},decay_dist{i,j}};
-        ind=find(weights(3:end)==0);
-        distance_metrics{i,j}(ind+1)=[];
+        ind=find(max_weights(4:end)==0);
+        distance_metrics{i,j}(ind+2)=[];
     end
 end
 
@@ -269,29 +273,45 @@ end
 % First element should be low, corresponding to centroid distance.
 similarity_pref={'low','high','low','low','low'};
 similarity_pref(ind+1)=[];
-if weights(2)==0
-    weights(2)==mean(weights(weights>0));
+for m=length(max_weights):-1:4
+if max_weights(m)==0
+    weights(:,m)=[];
 end
-if weights(3)==0
-    weights(3)==mean(weights(weights>0));
 end
 disp('Beginning Cell Tracking')
 
 %vector of weights for total metrics (including correlation) If no links are used,
 %set first elements of this vector to 0.
-weights=weights/sum(weights);
-min_num_neighbors=1.5;
+final_neuron=cell(size(weights,1),length(max_dist),length(min_prob),length(chain_prob));
+final_register=cell(size(final_neuron));
+for jj=1:size(weights,1)
+    for kk=1:length(max_dist)
+        for mm=1:length(min_prob)
+            for nn=1:length(chain_prob)
+disp('weights')
+curr_weights=weights(jj,:)
+disp('max_dist')
+curr_max_dist=max_dist(kk)
+disp('min_prob')
+curr_min_prob=min_prob(mm)
+disp('chain_prob')
+curr_chain_prob=chain_prob(nn)
 
+curr_weights=curr_weights/sum(curr_weights);
+min_num_neighbors=1.5;
 for k=1:length(neurons)
     centroids{k}=neurons{k}.centroid;
 end
-
+time=toc;
+disp(['Initialization: ', num2str(time), ' seconds'])
 %% Construct Cell Register
 tic
 
 [cell_register,aligned_probabilities]=compute_cell_register_adj(correlation_matrices,distance_links,distance_metrics,...
-    similarity_pref,weights,probability_assignment_method,max_dist,max_gap,min_prob,single_corr,corr_thresh,use_spat,min_num_neighbors,chain_prob,binary_corr,max_sess_dist,centroids);
-toc
+    similarity_pref,curr_weights,probability_assignment_method,curr_max_dist,max_gap,curr_min_prob,single_corr,corr_thresh,use_spat,min_num_neighbors,...
+    curr_chain_prob,binary_corr,max_sess_dist,centroids,scale_factor,reconstitute);
+time=toc;
+disp(['Tracking: ', num2str(time), ' seconds'])
 %neurons=neurons1;
 %links=links1;
 %% Construct Neuron Throughout Sessions Using Extracted Registration
@@ -357,8 +377,9 @@ for k=1:size(cell_register,2)
     
     A(:,index)=A(:,index)+neurons{k}.A(:,cell_register(ind,k));
     A_per_session(:,index,k)=neurons{k}.A(:,cell_register(ind,k));
-    decays(index)=decays(index)+neurons{k}.P.kernel_pars(cell_register(ind,k));
-    
+    if isprop(neurons{k}.P,'kernel_pars')
+        decays(index)=decays(index)+neurons{k}.P.kernel_pars(cell_register(ind,k));
+    end
     
 end
 
@@ -375,12 +396,27 @@ neuron.updateCentroid();
 try
     neuron=calc_snr(neuron);
 end
-neuron.probabilities=aligned_probabilities;
+neuron.connectiveness=aligned_probabilities;
+%neuron.probabilities=reg_prob;
 
 neuron.cell_register=cell_register;
 try
     neuron.options=neurons{1}.options;
 end
 
-neuron.delete(neuron.probabilities<chain_prob);
+neuron.delete(neuron.probabilities<curr_chain_prob);
+neuron.delete(neuron.connectiveness<curr_chain_prob);
+final_register{jj,kk,nn,mm}=neuron.cell_register;
+final_neuron{jj,kk,nn,mm}=neuron;
+            end
+        end
+    end
+end
+if length(final_neuron)==1
+    neuron=final_neuron{1};
+    cell_register=final_register{1};
+else
+    neuron=final_neuron;
+    cell_register=final_register;
+end
 

@@ -161,7 +161,7 @@ end
 for i=1:length(distance_metrics)
     X=NN_distance{i};
     if isequal(similarity_pref{i},'low')
-        %cheap hack deletes all X values where X=1, this is almost
+        %cheap hack deletes all X values where X=1 exactly, this is almost
         %certainly none of them unless the metric is the JS divergence
         %metric
         X(X==1)=[];

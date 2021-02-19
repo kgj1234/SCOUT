@@ -1,9 +1,9 @@
 #!/bin/bash 
 #$ -S /bin/bash 
 #$ -N batchendoscope 
-#$ -q mathskin
+#$ -q free64
 #$ -ckpt restart
 #$ -cwd 
-#$ -pe one-node-mpi 12
+#$ -pe one-node-mpi 24
  module load MATLAB
-~/SCOUT/HPC_code/full_pipeline/full_pipeline_hpc $'/pub/kgjohnst/Desktop/Hai_EA/mouse_01_2ndtest/layer2'
+~/SCOUT/HPC_code/full_pipeline/full_pipeline_hpc $'/pub/kgjohnst/data/KevinStuff_08272020/SCOUT/Demos'

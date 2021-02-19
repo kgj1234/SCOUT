@@ -25,9 +25,20 @@ if ~exist('KL_constraint','var')||isempty(KL_constraint)
 end
 %% select data and map it to the RAM
 nam = filename;
-
-cnmfe_choose_data;
-
+if isnumeric(nam)
+    Y=nam;
+    neuron=Sources2D;
+    neuron_full=Sources2D;
+    [d1,d2,T]=size(Y);
+    neuron.options.d1=ceil(d1/2);
+    neuron.options.d2=ceil(d2/2);
+    neuron_full.options.d1=d1;
+    neuron_full.options.d2=d2;
+    d1s=neuron.options.d1;
+    d2s=neuron.options.d2;
+else
+    cnmfe_choose_data;
+end
 %% create Source2D class object for storing results and parameters
 Fs = 15;             % frame rate
         % spatial downsampling factor
@@ -74,11 +85,20 @@ if ~isempty(indices)
     num2read= indices(2)-indices(1);             % user input: how many frames to read   (optional, default: until the end)
 
 else
-    sframe=1;
-    num2read=Ysiz(3);
+    if ~exist('Y','var')
+        sframe=1;
+        num2read=Ysiz(3);
+    else
+        sframe=1;
+        num2read=size(Y,3);
+    end
 end
 tic;
-cnmfe_load_data;
+if ~exist('Y','var')
+    cnmfe_load_data;
+else
+    Y=imresize(Y,[floor(size(Y,1)/2),floor(size(Y,2)/2)]);
+end
 fprintf('Time cost in downsapling data:     %.2f seconds\n', toc);
 
 
@@ -109,9 +129,10 @@ neuron_full.updateParams('min_corr', min_corr, 'min_pnr', min_pnr, ...
 neuron.options.nk = 1;  % number of knots for detrending 
 
 %Add noise to correlation image? (If so, reduce min_corr threshold)
-neuron_full.options.add_noise=.005;
-neuron.options.add_noise=.0005;
-
+neuron_full.options.add_noise=false;
+neuron.options.add_noise=false;
+neuron.options.gSiz=gSiz;
+neuron.options.gSig=gSig;
 if isequal(data_type,'2p')
     
     spatial_constraints=struct('connected',true,'circular',false);

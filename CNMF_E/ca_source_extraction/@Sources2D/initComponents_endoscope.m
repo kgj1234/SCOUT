@@ -55,14 +55,17 @@ if (~exist('patch_sz', 'var'))||(isempty(patch_sz))||(max(patch_sz(:))==1)
         if isequal(options.init_method,'max')
             [results, center, Cn, PNR] = greedyMax_endoscope(Ydt, K, options, debug_on, save_avi);
         else
-            [results, center, Cn, PNR] = greedyROI_endoscope(Ydt, K, options, debug_on, save_avi);
+            [results, center, Cn, PNR,~,options] = greedyROI_endoscope(Ydt, K, options, debug_on, save_avi);
         end
     else    % without detrending
         if isequal(options.init_method,'max')
             [results, center, Cn, PNR] = greedyMax_endoscope(Y, K, options, debug_on, save_avi);
         else
-            [results, center, Cn, PNR] = greedyROI_endoscope(Y, K, options, debug_on, save_avi);
+            [results, center, Cn, PNR,~,options] = greedyROI_endoscope(Y, K, options, debug_on, save_avi);
         end
+    end
+    try
+        obj.options=options;
     end
     obj.A = results.Ain;
     obj.C = results.Cin;

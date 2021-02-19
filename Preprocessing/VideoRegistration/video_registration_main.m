@@ -40,7 +40,7 @@ end
 if ~exist('data_type','var')||isempty(data_type)
     data_type='1p';
 end
-registration_methods={'translation','rigid','similarity','affine'};
+registration_methods={'translation','affine'};
 if use_non_rigid
     registration_methods{end+1}='non-rigid';
 end
@@ -205,6 +205,7 @@ while  nonempty<length(vid_paths)
         registrations={};
        
         [fixed_mask,moving_mask]=manual_ROI_selection(fixed_proj,moving_proj);
+        try
         for i=1:length(fixed_mask)
             s=regionprops(fixed_mask{i},'centroid');
             centroid_1(i,:)=s.Centroid;
@@ -213,7 +214,9 @@ while  nonempty<length(vid_paths)
         end
         diff=centroid_2-centroid_1;
         diff=mean(diff,1);
-        
+        catch
+            diff=[0,0];
+        end
         moving_proj_new=imtranslate(moving_proj,-1*diff);
         reg1=affine2d;
         reg1.T=[1,0,0;0,1,0;-1*diff(1),-1*diff(2),1];
