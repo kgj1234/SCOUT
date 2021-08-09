@@ -37,7 +37,7 @@ C_raw = obj.C_raw;
 C = obj.C;
 
 if ~exist('merge_thr', 'var') || isempty(merge_thr) || numel(merge_thr)~=3
-    merge_thr = [.3, 0.7, 0];
+    merge_thr = [.6, 0.7, -1];
 end
 A_thr = merge_thr(1);
 C_thr = merge_thr(2);

@@ -29,9 +29,14 @@ if isequal(registration_type,'align_to_base')
             template_norm=max(reshape(neurons{i}.A./max(neurons{i}.A,[],1),neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
             template=max(reshape(neurons{i}.A,neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
         end
-        [neurons{i},mse]=register_neurons_ind(neurons{i},base_template,base_template_norm,template,template_norm,normalize,registration_method);
-        if mse>reg_thresh
-            warning('Registration Failed')
+        [temp,mse,curr_mse]=register_neurons_ind(neurons{i}.copy(),base_template,base_template_norm,template,template_norm,normalize,registration_method);
+        if mse<curr_mse
+            neurons{i}=temp;
+        end
+        if min(mse,curr_mse)>reg_thresh
+            warning('Possible Poor Registration')
+        
+            
         end
         %    neurons{i}=thresholdNeuron(neurons{i},.3);
         total_comp=total_comp+1;
@@ -56,9 +61,14 @@ else
             template_prev=max(reshape(neurons{i-1}.A,neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
             template_prev_norm=max(reshape(neurons{i-1}.A./max(neurons{i-1}.A,[],1),neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
         end
-        [neurons{i},mse]=register_neurons_ind(neurons{i},template_prev,template_prev_norm,template_curr,template_curr_norm,normalize,registration_method);
-        if mse>reg_thresh
-            warning('Registration Failed')
+        [temp,mse,curr_mse]=register_neurons_ind(neurons{i}.copy(),template_prev,template_prev_norm,template_curr,template_curr_norm,normalize,registration_method);
+        if mse<curr_mse
+            neurons{i}=temp;
+        end
+        if min(mse,curr_mse)>reg_thresh
+            warning('Possible Poor Registration')
+        
+            
         end
         total=total+1;
         display_progress_bar(total/(length(neurons)-1)*100,false);
@@ -82,9 +92,14 @@ else
             template_prev=max(reshape(neurons{i+1}.A,neurons{1}.imageSize(1),neurons{1}.imageSize(2),[]),[],3);
         end
         
-         [neurons{i},mse]=register_neurons_ind(neurons{i},template_prev,template_prev_norm,template_curr,template_curr_norm,normalize,registration_method);
-        if mse>reg_thresh
-            warning('Registration Failed')
+         [temp,mse,curr_mse]=register_neurons_ind(neurons{i}.copy(),template_prev,template_prev_norm,template_curr,template_curr_norm,normalize,registration_method);
+        if mse<curr_mse
+            neurons{i}=temp;
+        end
+        if min(mse,curr_mse)>reg_thresh
+            warning('Possible Poor Registration')
+        
+            
         end
        total=total+1;
        
@@ -122,9 +137,14 @@ if ~isempty(links)
                 template_prev=max(reshape(neurons{i}.A,links{1}.imageSize(1),links{1}.imageSize(2),[]),[],3);
             end
           
-            [links{i},mse]=register_neurons_ind(links{i},template_prev,template_prev_norm,template_curr,template_curr_norm,normalize,registration_method);
-            if mse>reg_thresh
-                warning('Link Registration Failed')
+            [temp,mse,curr_mse]=register_neurons_ind(links{i}.copy(),template_prev,template_prev_norm,template_curr,template_curr_norm,normalize,registration_method);
+            if mse<curr_mse
+                links{i}=temp;
+            end
+            if min(mse,curr_mse)>reg_thresh
+                warning('Possible Poor Registration')
+
+
             end
      
             total=total+1;

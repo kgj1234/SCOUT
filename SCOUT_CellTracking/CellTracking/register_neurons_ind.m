@@ -1,4 +1,4 @@
-function [neuron,mse]=register_neurons_ind(neuron,base_template,base_template_norm,template,template_norm,normalize,registration_method)
+function [neuron,mse,curr_mse]=register_neurons_ind(neuron,base_template,base_template_norm,template,template_norm,normalize,registration_method)
 if normalize
     template=template_norm;
     base_template=base_template_norm;

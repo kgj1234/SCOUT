@@ -1,4 +1,4 @@
-% demo file for applying the NoRMCorre motion correction algorithm on 
+1% demo file for applying the NoRMCorre motion correction algorithm on 
 % 1-photon widefield imaging data
 % Example files can be obtained through the miniscope project page
 % www.miniscope.org

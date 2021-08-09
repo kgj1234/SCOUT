@@ -1,6 +1,6 @@
 function [pair_aligned,correlation,distance_vals,corr_prob,distance_prob,max_pixel_distance]=...
     compute_aligned_pairwise_probability_single_full(correlation_matrices,distance_links,dist_self,...
-    distance_metrics,similarity_pref,max_dist,use_corr,single_corr,method,corr_thresh,min_num_neighbors_factor,min_prob)
+    distance_metrics,similarity_pref,max_dist,use_corr,single_corr,method,corr_thresh,min_num_neighbors_factor,min_prob,similarity_id)
 
 
 %% Construct identification probabilities across sessions
@@ -79,7 +79,9 @@ temp_aligned=[];
 for j=1:size(dist_self,1)
     avail_ind=find(distance_metrics{1}(j,:)<max_dist);
     for i=1:length(distance_metrics)
-        NN_distance{i}=[NN_distance{i},distance_metrics{i}(j,avail_ind)];
+        try
+            NN_distance{i}=[NN_distance{i},distance_metrics{i}(j,avail_ind)];
+        end
     end
 end
 if ~exist('min_num_neighbors_factor','var')
@@ -90,14 +92,18 @@ max_iter=15;
 %Sort by centroid distance
 [NN_distance{1},Ind]=sort(NN_distance{1});
 for k=2:length(NN_distance)
-    NN_distance{k}=NN_distance{k}(Ind);
+    try
+        NN_distance{k}=NN_distance{k}(Ind);
+    end
 end
 
 %Eliminate neurons with zero overlap
 if length(NN_distance)>1
     ind=find(NN_distance{2}==0);
     for p=1:length(NN_distance)
-        NN_distance{p}(ind)=[];
+        try
+            NN_distance{p}(ind)=[];
+        end
     end
 end
 
@@ -153,25 +159,45 @@ end
 NN_distance{1}=NN_distance{1}(NN_distance{1}<max_pixel_distance);
 vector_length=length(NN_distance{1});
 for k=2:length(NN_distance);
-    NN_distance{k}=NN_distance{k}(1:vector_length);
+    try
+         NN_distance{k}=NN_distance{k}(1:vector_length);
+    end
 end
 
 
 %Construct individual probability assignments for each metric
 for i=1:length(distance_metrics)
     X=NN_distance{i};
-    if isequal(similarity_pref{i},'low')
-        %cheap hack deletes all X values where X=1 exactly, this is almost
-        %certainly none of them unless the metric is the JS divergence
-        %metric
-        X(X==1)=[];
+    if isequal(similarity_id{i},'JS')
         
-    
+        X(X==1)=[];
     end
-    
+    use_temp=false;
+    X(isoutlier(X))=[];
+%     if isequal(similarity_id{i},'decay')||isequal(similarity_id{i},'SNR')
+%         %temp_method='gemm';
+%         %use_temp=true;
+%         if isequal(similarity_id{i},'decay')||isequal(similarity_id{i},'SNR')
+%             X(isoutlier(X))=[];
+%         end
+%     end
     X(isnan(X))=[];
-    f_distance{i}=construct_probability_function_main(X,method,similarity_pref{i});
+    if isempty(X)
+        f_distance{i}=[];
+    else
+        if use_temp
+            f_distance{i}=construct_probability_function_main(X,temp_method,similarity_pref{i});
+            use_temp=false;
+        else
+            f_distance{i}=construct_probability_function_main(X,method,similarity_pref{i});
+        end
+     end
 end
+x=0:.01:max(NN_distance{1});
+vals=f_distance{1}(x);
+vals(vals<.5)=[];
+link_pixel_distance=1.25*x(length(vals));
+
 
 if use_corr
 for j=1:size(dist_self,1)
@@ -225,13 +251,14 @@ end
 if use_corr
     
     X=NN_corr2;
-    
-    
+    X(isoutlier(X))=[];
+    %method='gmm';
     
     f_corr2=construct_probability_function_main(X,method,'right');
     
     if ~single_corr
         X=NN_corr1;
+        X(isoutlier(X))=[];
         f_corr1=construct_probability_function_main(X,method,'right');
     end
     
@@ -258,8 +285,14 @@ for i=1:size(dist_self,1)
     else
         
         for k=1:length(distance_metrics)
-            distance_score{k}{i}=f_distance{k}(distance_metrics{k}(i,avail_ind));
-            distance{k}{i}=distance_metrics{k}(i,avail_ind);
+            if isempty(f_distance{k})
+                distance_score{k}{i}=zeros(1,length(avail_ind));
+                distance{k}{i}=zeros(1,length(avail_ind));
+            else
+                distance_score{k}{i}=f_distance{k}(distance_metrics{k}(i,avail_ind));
+                distance{k}{i}=distance_metrics{k}(i,avail_ind);
+            end
+            
         end
         
         aligned{i}=avail_ind;
@@ -267,11 +300,11 @@ for i=1:size(dist_self,1)
     end
     
     if use_corr
-        avail_ind1=find(distance_links{1}(i,:)<max_pixel_distance);
+        avail_ind1=find(distance_links{1}(i,:)<link_pixel_distance);
         if ~single_corr
             avail_ind2=[];
             for j=1:length(avail_ind)
-                avail_ind2=[avail_ind2,find(distance_links{2}(:,avail_ind(j))'<max_pixel_distance)];
+                avail_ind2=[avail_ind2,find(distance_links{2}(:,avail_ind(j))'<link_pixel_distance)];
             end
             link_ind=intersect(avail_ind1,avail_ind2);
         else
@@ -279,8 +312,8 @@ for i=1:size(dist_self,1)
         end
         if isempty(link_ind)
             
-            corr_score{i}=ones(1,length(distance_score{1}{i}));
-            correlation{i}=min_prob*ones(length(distance_score{1}{i}),2);
+            corr_score{i}=nan(1,length(distance_score{1}{i}));
+            correlation{i}=0*ones(length(distance_score{1}{i}),2);
             
         else
             for j=1:length(avail_ind)
@@ -305,9 +338,11 @@ for i=1:size(dist_self,1)
                 if single_corr
                     
                     
-                    
-                    val=f_corr2(corr_max(2));
-                    
+                    if isempty(f_corr2)
+                        val=0;
+                    else
+                        val=f_corr2(corr_max(2));
+                    end
                     
                     
                     if ~isempty(val)&mean(corr_max)>=corr_thresh
@@ -317,13 +352,16 @@ for i=1:size(dist_self,1)
                     end
                     
                 else
-                    
-                    val=(f_corr1(corr_max(1))+f_corr2(corr_max(2)))/2;
+                    if isempty(f_corr1)||isempty(f_corr2)
+                        val=0;
+                    else
+                        val=(f_corr1(corr_max(1))+f_corr2(corr_max(2)))/2;
+                    end
                     
                     if ~isempty(val)&mean(corr_max)>corr_thresh
                         corr_score{i}(j)=val;
                     else
-                        corr_score{i}(j)=nan;
+                        corr_score{i}(j)=0;
                     end
                 end
                 correlation{i}(j,:)=corr_max;
@@ -361,4 +399,4 @@ else
 end
 
 
-
+'hi';

@@ -23,7 +23,7 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 %  registration_type: (str) 'align_to_base' or 'consecutive', Determines if
 %       sessions are registered to base session, or registered
 %       consecutively.
-%  registration_method: (str, or cell of strings) 'translation', 'similarity','affine' or 'non-rigid', method for session
+%  registration_method: (cell of strings) 'translation', 'similarity','affine' or 'non-rigid', method for session
 %       registration. If given a cell of strings, registrations will be
 %       performed consecutively
 %  registration_template: (str) Use spatial positions of neurons 'spatial', or
@@ -36,14 +36,15 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 %   max_gap: (int) indicating largest gap between sessions for cell
 %       registration. 0 indicates cells must appear in each session
 %   probability_assignment_method: (str) either 'percentile', 'gmm',
-%       'gemm','glmm' 'default' or 'Kmeans'
+%       'gemm','glmm' or 'Kmeans'
 %   base: (int range [1,length(neurons)]) base session for alignment
 %   min_prob: (float or vector of floats, range [0,1]) minimum probability for identification between
 %   sessions
 %   binary_corr: (bool) treat correlation on connecting recordings as binary
 %      variable
 %   max_sess_dist: (int) limits number of compared sessions to reduce
-%     runtime. Leave as [] for no reduction.
+%     runtime. Leave as [] for no reduction, currently doesn't work,
+%     defaults to inf.
 %   footprint_threshold (float range [0,1]) percentile to threshold
     %   spatial footprints
 %   single_corr (bool) use this if correlation is to be calculated only on
@@ -62,11 +63,11 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 
 
 %% Assign variables
-tic
+%tic
 optional_parameters={'links','weights','max_dist','overlap','chain_prob','corr_thresh','register_sessions','registration_type','registration_method',...
     'registration_template','use_corr','use_spat','max_gap','probability_assignment_method','base','min_prob','binary_corr','max_sess_dist',...
-    'footprint_threshold','cell_tracking_options','single_corr','scale_factor','reconstitute'};
-defaults={{},[4,5,5,0,0,0],[45],[],[.5],.7,true,'align_to_base',{'affine','non-rigid'},'spatial',false,true,0,'Kmeans',ceil(length(neurons)/2),[.5],false,20,.1,struct,false,1.5,true};
+    'footprint_threshold','cell_tracking_options','single_corr','scale_factor','reconstitute','construct_combined'};
+defaults={{},[4,5,5,0,0,0],[45],[],[.5],.7,true,'align_to_base',{'affine','non-rigid'},'spatial',false,true,0,'default',ceil(length(neurons)/2),[.5],false,inf,.1,struct,false,1.5,true,true};
 
 p=inputParser;
 
@@ -99,6 +100,14 @@ if max_weights(1)==0
     overlap=0;
     corr_thresh=[];
 end
+
+%Assign appropriate probability assignment method
+if length(neurons)==2&isequal(probability_assignment_method,'default')
+    probability_assignment_method='gmm'
+elseif length(neurons)>2&isequal(probability_assignment_method,'default')
+    probability_assignment_method='Kmeans'
+end
+
 %% Copy neurons and links to new memory locations, standardize FOV size for each session
 
 
@@ -118,6 +127,9 @@ for i=1:length(neurons)
 end
 for i=1:length(links)
     links1{i}=links1{i}.copy();
+    len=size(links1{i}.C,2);
+    ind=find(sum(links1{i}.S(:,1:len/2),2)==0|sum(links1{i}.S(:,len/2+1:end),2)==0);
+    links1{i}.delete(ind);
 end
 clear links
 links=links1;
@@ -238,16 +250,44 @@ end
 if max_weights(5)>0
 for i=1:length(neurons)
     for j=i:length(neurons)
-        SNR_dist{i,j}=pdist2(neurons{i}.SNR,neurons{j}.SNR)./((repmat(neurons{i}.SNR,1,size(neurons{j}.SNR,1))+repmat(neurons{j}.SNR',size(neurons{i}.SNR,1),1))/2);
+        %SNR_dist{i,j}=pdist2(neurons{i}.SNR,neurons{j}.SNR)./((repmat(neurons{i}.SNR,1,size(neurons{j}.SNR,1))+repmat(neurons{j}.SNR',size(neurons{i}.SNR,1),1))/2);
+        SNR_dist{i,j}=pdist2(log(neurons{i}.SNR),log(neurons{j}.SNR));
     end
 end
 else
     SNR_dist=cell(length(neurons),length(neurons));
 end
-if weights(6)>0
+if max_weights(6)>0
+
+if isempty(neurons{i}.P.kernel_pars)
+    warning('No decay rate available, setting 6th column of weights to 0')
+    weights(:,6)=0;
+    max_weights(6)=0;
+elseif length(neurons{i}.P.kernel_pars)<size(neurons{i}.C,1)&~isempty(neurons{i}.P.kernel_pars)
+    neurons{i}.P.kernel_pars(end+1:size(neurons{i}.C,1))=mean(neurons{i}.P.kernel_pars);
+    warning('Some missing decay rates, replacing with average')
+    
+end
+end
+    
+if max_weights(6)>0 
+for i=1:length(neurons)
+    decay_rate{i}=zeros(size(neurons{i}.P.kernel_pars,1),1);
+    for k=1:length(decay_rate{i})
+        temp=ar2exp(neurons{i}.P.kernel_pars(k));
+        decay_rate{i}(k)=temp(1);
+        
+    end
+    decay_rate{i}(end+1:size(neurons{i}.C,1))=mean(decay_rate{i});
+    neurons{i}.P.kernel_pars(end+1:size(neurons{i}.C,1))=mean(neurons{i}.P.kernel_pars);
+    %neurons{i}.P.kernel_pars=decay_rate{i};
+end
 for i=1:length(neurons)
     for j=i:length(neurons)
+        
+            
         decay_dist{i,j}=pdist2(neurons{i}.P.kernel_pars,neurons{j}.P.kernel_pars)./((repmat(neurons{i}.P.kernel_pars,1,size(neurons{j}.P.kernel_pars,1))+repmat(neurons{j}.P.kernel_pars',size(neurons{i}.P.kernel_pars,1),1))/2);
+        %decay_dist{i,j}=pdist2(decay_rate{i},decay_rate{j});
     end
 end
 else
@@ -260,8 +300,8 @@ end
 for i=1:size(distance_matrices,1)
     for j=1:size(distance_matrices,2)
         distance_metrics{i,j}={distance_matrices{i,j},overlap_matrices{i,j},JS_matrices{i,j},SNR_dist{i,j},decay_dist{i,j}};
-        ind=find(max_weights(4:end)==0);
-        distance_metrics{i,j}(ind+2)=[];
+        %ind=find(max_weights(4:end)==0);
+        %distance_metrics{i,j}(ind+2)=[];
     end
 end
 
@@ -270,58 +310,110 @@ end
 % cell of strings 'low', and 'high', indicating whether the distance
 % similarity prefers low or high values (centroid distance: low, overlap:
 % high) 
-% First element should be low, corresponding to centroid distance.
+% When creating new similarity functions, do not alter any current elements
+% of the list, only add terms to the end
 similarity_pref={'low','high','low','low','low'};
-similarity_pref(ind+1)=[];
-for m=length(max_weights):-1:4
-if max_weights(m)==0
-    weights(:,m)=[];
-end
-end
+similarity_id={'centroid','overlap','JS','SNR','decay'};
+
+
 disp('Beginning Cell Tracking')
 
 %vector of weights for total metrics (including correlation) If no links are used,
 %set first elements of this vector to 0.
 final_neuron=cell(size(weights,1),length(max_dist),length(min_prob),length(chain_prob));
 final_register=cell(size(final_neuron));
-for jj=1:size(weights,1)
-    for kk=1:length(max_dist)
-        for mm=1:length(min_prob)
-            for nn=1:length(chain_prob)
-disp('weights')
-curr_weights=weights(jj,:)
-disp('max_dist')
-curr_max_dist=max_dist(kk)
-disp('min_prob')
-curr_min_prob=min_prob(mm)
-disp('chain_prob')
-curr_chain_prob=chain_prob(nn)
 
-curr_weights=curr_weights/sum(curr_weights);
-min_num_neighbors=1.5;
 for k=1:length(neurons)
     centroids{k}=neurons{k}.centroid;
 end
-time=toc;
-disp(['Initialization: ', num2str(time), ' seconds'])
+%for jj=1:size(weights,1)
+%    for kk=1:length(max_dist)
+%        for mm=1:length(min_prob)
+%            for nn=1:length(chain_prob)
+param_vec=[size(weights,1),length(max_dist),length(min_prob),length(chain_prob)];
+
+%Why is this necessary?
+max_dist=max_dist;
+min_prob=min_prob;
+chain_prob=chain_prob;
+probability_assignment_method=probability_assignment_method;
+max_gap=max_gap;
+single_corr=single_corr;
+corr_thresh=corr_thresh;
+use_spat=use_spat;
+
+binary_corr=binary_corr;
+max_sess_dist=max_sess_dist;
+scale_factor=scale_factor;
+reconstitute=reconstitute;
+construct_combined=construct_combined;
+
+%Change this to parfor for parallel execution using multiple parameters
+for oo=1:prod(param_vec)
+   % for oo=47
+[jj,kk,mm,nn]=ind2sub(param_vec,oo);
+ 
+%disp('weights')
+curr_weights=weights(jj,:);
+%disp('max_dist')
+curr_max_dist=max_dist(kk);
+%disp('min_prob')
+curr_min_prob=min_prob(mm);
+%disp('chain_prob')
+curr_chain_prob=chain_prob(nn);
+
+curr_weights=curr_weights/sum(curr_weights);
+min_num_neighbors=1.5;
+%min_num_neighbors=1;
+
+%disp(['Initialization: ', num2str(time), ' seconds'])
 %% Construct Cell Register
-tic
-
-[cell_register,aligned_probabilities]=compute_cell_register_adj(correlation_matrices,distance_links,distance_metrics,...
+%tic
+try
+[cell_register,aligned_probabilities,reg_prob]=compute_cell_register_cluster(correlation_matrices,distance_links,distance_metrics,...
     similarity_pref,curr_weights,probability_assignment_method,curr_max_dist,max_gap,curr_min_prob,single_corr,corr_thresh,use_spat,min_num_neighbors,...
-    curr_chain_prob,binary_corr,max_sess_dist,centroids,scale_factor,reconstitute);
-time=toc;
-disp(['Tracking: ', num2str(time), ' seconds'])
-%neurons=neurons1;
-%links=links1;
-%% Construct Neuron Throughout Sessions Using Extracted Registration
-if isempty(cell_register)
-    neuron=Sources2D;
-    return
+    curr_chain_prob,binary_corr,max_sess_dist,centroids,scale_factor,reconstitute,similarity_id);
+catch
+    cell_register=[];
+    aligned_probabilities=[];
+    reg_prob=[];
+    warning('Cell Tracking Failed')
 end
-data_shape=neurons{1}.imageSize;
+%time=toc;
+%disp(['Tracking: ', num2str(time), ' seconds'])
+
+%Remove neurons below probability threshold
+% if ~isempty(reg_prob)
+%     rem_ind=aligned_probabilities<curr_chain_prob|reg_prob<curr_chain_prob;
+%     %rem_ind=aligned_probabilities<curr_chain_prob;
+% else
+%     rem_ind=aligned_probabilities<curr_chain_prob;
+%     reg_prob=aligned_probabilities;
+% end
+% temp=mean([aligned_probabilities,reg_prob],2);
+% idx=kmeans(temp,2);
+% rem_ind=[];
+% 
+% if min(mean(temp(idx==1,:),1))<max(mean(temp(idx==2,:),1))-.25
+%     rem_ind=[rem_ind,find(idx==1)];
+% elseif min(mean(temp(idx==2,:),1))<max(mean(temp(idx==1,:),1))-.25
+%     rem_ind=[rem_ind,find(idx==2)];
+%     
+% end
 
 
+
+
+
+% cell_register(rem_ind,:)=[];
+% aligned_probabilities(rem_ind,:)=[];
+% reg_prob(rem_ind,:)=[];
+
+
+%% Construct Neuron Throughout Sessions Using Extracted Registration
+if isempty(cell_register)||~construct_combined
+    neuron=Sources2D;
+else 
 
 neuron=Sources2D;
 
@@ -397,26 +489,23 @@ try
     neuron=calc_snr(neuron);
 end
 neuron.connectiveness=aligned_probabilities;
-%neuron.probabilities=reg_prob;
+neuron.probabilities=reg_prob;
 
 neuron.cell_register=cell_register;
 try
     neuron.options=neurons{1}.options;
 end
 
-neuron.delete(neuron.probabilities<curr_chain_prob);
-neuron.delete(neuron.connectiveness<curr_chain_prob);
-final_register{jj,kk,nn,mm}=neuron.cell_register;
-final_neuron{jj,kk,nn,mm}=neuron;
-            end
-        end
-    end
 end
+final_register{oo}=cell_register;
+final_neuron{oo}=neuron;
+end
+        
 if length(final_neuron)==1
     neuron=final_neuron{1};
     cell_register=final_register{1};
 else
-    neuron=final_neuron;
     cell_register=final_register;
+    neuron=final_neuron;
 end
 

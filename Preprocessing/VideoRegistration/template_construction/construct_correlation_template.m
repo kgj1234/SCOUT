@@ -9,7 +9,7 @@ global  d1 d2 numFrame sframe num2read Fs neuron neuron_ds ...
     neuron_full Ybg_weights; %#ok<NUSED> % global variables, don't change them manually
 
 
-
+gSiz=8;
 ssub=2;
 tsub=2;
 
@@ -156,17 +156,21 @@ end
 
 % greedy method for initialization
 tic;
-
-Cn=correlation_image(Y,[],d1s,d2s,[],[],true);
-
-if exist('neuron_centers','var')
-
-    [center, Cn, pnr] = neuron.initComponents_endoscope(Y, K, patch_par, debug_on, save_avi,neuron_centers);
-else
-    [center,Cn,pnr]=neuron.initComponents_endoscope(Y, K, patch_par, debug_on, save_avi);
-           
-         
+add_noise=true;
+if isequal(data_type,'2p')
+   add_noise=.00001;
 end
+neuron.options.add_noise=add_noise;
+Cn=correlation_image(Y,[],d1s,d2s,[],[],add_noise);
+
+% if exist('neuron_centers','var')
+% 
+%     [center, Cn, pnr] = neuron.initComponents_endoscope(Y, K, patch_par, debug_on, save_avi,neuron_centers);
+% else
+%     [center,Cn,pnr]=neuron.initComponents_endoscope(Y, K, patch_par, debug_on, save_avi);
+%            
+%          
+% end
 Cn=imresize(Cn,[d1,d2]);
 %Cn=imgaussfilt(Cn);
 end

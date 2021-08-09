@@ -1,29 +1,58 @@
 function [cell_register,reg_prob,aligned_probabilities]=construct_aligned_neuron_graph_kmedoids(aligned,...
-    probabilities,size_vec,chain_prob)
+    probabilities,size_vec,chain_prob,prob,distance_vals,min_prob)
 
 [similarity_matrix,ids]=construct_similarity_matrix(aligned,probabilities,size_vec);
+subsid_sim_matrices{1}=similarity_matrix;
+for j=2:30
+    subsid_sim_matrices{j}=construct_subsid_similarity_matrices(aligned,prob,size_vec,distance_vals);
+end
 
 [S,C]=graphconncomp(similarity_matrix);
 cell_register=cell(1,S);
+reg_prob=cell(1,S);
+
 parfor k=1:S
-    idx=cell(1,5);
+    idx=cell(1,30);
+    num_clust=zeros(1,10);
     used_ind=cell(1,5);
     nodes=find(C==k);
-    full_mat=similarity_matrix(nodes,nodes);
     node_sessions=find_node_sessions(nodes,size_vec);
-    for j=1:15
-    used_ind{j}=randsample(size(full_mat,1),ceil(1*size(full_mat,1)));
-    curr_mat=full_mat(used_ind{j},used_ind{j});
-    [idx{j}]=kmedoids_cluster_constrained(curr_mat,max(ceil(size(curr_mat,1)/length(size_vec)),max(groupcounts(node_sessions(used_ind{j})'))),chain_prob,size(probabilities,2),node_sessions(used_ind{j}));
+    if length(nodes)==1
+        reg_prob{k}=1;
+        cell_register{k}=extract_cell_register(1,nodes,node_sessions,size_vec);
+        
+    else
+    
+    
+    
+    for j=1:30
+        full_mat=subsid_sim_matrices{j}(nodes,nodes);
+        used_ind{j}=1:size(full_mat,1);
+        %used_ind{j}=1:size(full_mat,1);
+        curr_mat=full_mat(used_ind{j},used_ind{j});
+        [idx{j},num_clust(j)]=kmedoids_cluster_constrained(curr_mat,max(ceil(size(curr_mat,1)/length(size_vec)),max(groupcounts(node_sessions(used_ind{j})'))),chain_prob,size(probabilities,2),node_sessions(used_ind{j}));
     end
-    consensus_matrix=construct_consensus(idx,used_ind,length(nodes));
    
-    idx=kmedoids_cluster_constrained(consensus_matrix,max(ceil(size(full_mat,1)/length(size_vec)),max(groupcounts(node_sessions'))),chain_prob,size(probabilities,2),node_sessions);
+    consensus_matrix=construct_consensus(idx,used_ind,length(nodes),full_mat,length(aligned));
+    consensus_matrix(consensus_matrix<min_prob)=0;
+    %idx=greedy_consensus(consensus_matrix,curr_mat,chain_prob);
+    idx=kmedoids_cluster_constrained(consensus_matrix,ceil(mean(num_clust)),min(chain_prob,.75),size(probabilities,2),node_sessions);
     cell_register{k}=extract_cell_register(idx,nodes,node_sessions,size_vec);
+    
+    for j=1:max(idx)
+        curr_mat=full_mat(idx==j,idx==j);
+        curr_mat(logical(eye(size(curr_mat))))=[];
+        reg_prob{k}(j,1)=mean(curr_mat,'all','omitnan');
+        if isempty(curr_mat)
+            reg_prob{k}(j,1)=1;
+        end
+    end
+    end
 end
 
 cell_register=vertcat(cell_register{:});
-reg_prob=zeros(size(cell_register,1),1);
+reg_prob=vertcat(reg_prob{:});
+%reg_prob=zeros(size(cell_register,1),1);
 aligned_probabilities=zeros(size(cell_register,1),1);
 for k=1:size(cell_register,1)
     ind=cell_register(k,:);
@@ -35,10 +64,7 @@ for k=1:size(cell_register,1)
     end
     curr_mat=similarity_matrix(nodes,nodes);
     curr_mat(curr_mat==0)=nan;
-    reg_prob(k)=mean(curr_mat,'all','omitnan');
-    if isnan(reg_prob(k));
-        reg_prob(k)=1;
-    end
+    
     n=length(nodes);
     if n==1
         aligned_probabilities(k)=1;
@@ -48,8 +74,7 @@ for k=1:size(cell_register,1)
 end
 
 
-
-
+'hi';
 
 
 

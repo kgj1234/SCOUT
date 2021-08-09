@@ -63,7 +63,7 @@ vid_files=sort(vid_files);
 
 
 for i=1:length(vid_files)
-    Y=matfile([base_dir,vid_files{i}]);
+    Y=matfile(fullfile(base_dir,vid_files{i}));
     batches(i)=Y.Ysiz(1,3);
 end
 

@@ -203,36 +203,62 @@ while  nonempty<length(vid_paths)
     iter=1;
     while isequal(keep,'m')
         registrations={};
-       
-        [fixed_mask,moving_mask]=manual_ROI_selection(fixed_proj,moving_proj);
-        try
-        for i=1:length(fixed_mask)
-            s=regionprops(fixed_mask{i},'centroid');
-            centroid_1(i,:)=s.Centroid;
-            s=regionprops(moving_mask{i},'centroid');
-            centroid_2(i,:)=s.Centroid;
-        end
-        diff=centroid_2-centroid_1;
-        diff=mean(diff,1);
-        catch
-            diff=[0,0];
-        end
-        moving_proj_new=imtranslate(moving_proj,-1*diff);
-        reg1=affine2d;
-        reg1.T=[1,0,0;0,1,0;-1*diff(1),-1*diff(2),1];
-        reg1={reg1};
         
-        if iter==1
+%         [fixed_mask,moving_mask]=manual_ROI_selection(fixed_proj,moving_proj);
+%         try
+%         for i=1:length(fixed_mask)
+%             s=regionprops(fixed_mask{i},'centroid');
+%             centroid_1(i,:)=s.Centroid;
+%             s=regionprops(moving_mask{i},'centroid');
+%             centroid_2(i,:)=s.Centroid;
+%         end
+%         diff=centroid_2-centroid_1;
+%         diff=mean(diff,1);
+%         catch
+%             diff=[0,0];
+%         end
+%         moving_proj_new=imtranslate(moving_proj,-1*diff);
+%         reg1=affine2d;
+%         reg1.T=[1,0,0;0,1,0;-1*diff(1),-1*diff(2),1];
+%         reg1={reg1};
+        close all
+        figure('Name','Moving')
+        imagesc(moving_proj)
+        colormap gray
+        figure('Name','Fixed')
+        imagesc(fixed_proj)
+        colormap gray
+        [mp,fp] = cpselect(moving_proj,fixed_proj,'Wait',true);
+        reg1{1}=fitgeotrans(mp,fp,'projective');
+        R=imref2d(size(fixed_proj));
+        moving_proj_new=imwarp(moving_proj,reg1{1},'OutputView',R);
+ 
+        if use_non_rigid
+            
+            [moving_proj_temp,registrations]=register_projections(moving_proj_new,fixed_proj,{'non-rigid'});
+        else
             [moving_proj_temp,registrations]=register_projections(moving_proj_new,fixed_proj,registration_methods);
+        end
+   
+        figure('Name','moving_proj_new')
+        imagesc(moving_proj_new)
+        colormap gray
+        
+        figure('Name','moving_proj_refined')
+        imagesc(moving_proj_temp)
+        colormap gray
+        
+        keep_refine=input('Keep refined? y/n ','s');
+        if isequal(keep_refine,'y')
+            for k=1:length(registrations)
+                reg1{end+1}=registrations{k};
+            end
+            registrations=reg1;
         else
             moving_proj_temp=moving_proj_new;
-            registrations={};
+            registrations=reg1;
         end
-        for k=1:length(registrations)
-            reg1{end+1}=registrations{k};
-        end
-        registrations=reg1;
-   
+        close all
         
         figure('name','moving','Position', [10 10 200 200])
         imagesc(moving_proj_temp)
@@ -254,7 +280,7 @@ while  nonempty<length(vid_paths)
         R=imref2d(size(fixed_proj));
         parfor k=1:size(moving,3)
             for p=1:length(registrations)
-                if isequal(class(registrations{p}),'affine2d')
+                if isequal(class(registrations{p}),'affine2d')||isequal(class(registrations{p}),'projective2d')
                     moving(:,:,k)=imwarp(double(moving(:,:,k)),registrations{p},'OutputView',R);
                 else
                     moving(:,:,k)=deformation(double(moving(:,:,k)),...

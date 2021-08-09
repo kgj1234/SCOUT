@@ -1,4 +1,4 @@
-function Y=runrigid2(file,conv_uint8,save_file)
+function Y=runrigid2(file,conv_uint8,save_file,template)
 % demo file for applying the NoRMCorre motion correction algorithm on 
 % 1-photon widefield imaging data
 % Example files can be obtained through the miniscope project page
@@ -71,7 +71,9 @@ bound=0;
 %% first try out rigid motion correction
     % exclude boundaries due to high pass filtering effects
 options_r = NoRMCorreSetParms('d1',d1-bound,'d2',d2-bound,'bin_width',40,'max_shift',8,'iter',2,'correct_bidir',false);
-options_r.upd_template=true;
+if ~exist('template','var')||isempty(template)
+    options_r.upd_template=true;
+end
 options_r.init_batch=50;
 %% register using the high pass filtered data and apply shifts to original data
 tic;

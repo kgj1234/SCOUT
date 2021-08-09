@@ -25,18 +25,25 @@ if isequal(tail,'left')
 probability=probability(:,1);
 for i=1:length(X)
     if X(i)<small_val
+        %probability(i)=1-.1*(X(i)/small_val);
         probability(i)=1;
     elseif X(i)>large_val
         probability(i)=0;
+    elseif X(i)<=large_val&&X(i)>=small_val;
+        
+        %probability(i)=probability(i)*(.9);
     end
 end
 else
     probability=probability(:,2);
 for i=1:length(X)
     if X(i)>large_val
+        %probability(i)=1-.1*((1-X(i))/(1-large_val));
         probability(i)=1;
     elseif X(i)<small_val
         probability(i)=0;
+    elseif X(i)<=large_val&&X(i)>=small_val
+        %probability(i)=.9*probability(i);
     end
 end
 end
