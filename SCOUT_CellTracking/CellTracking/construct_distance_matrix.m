@@ -1,3 +1,7 @@
+
+
+
+
 function distances=construct_distance_matrix(neurons)
 %Construct centroid distance between all neuron pairs extracted from
 %different recordings

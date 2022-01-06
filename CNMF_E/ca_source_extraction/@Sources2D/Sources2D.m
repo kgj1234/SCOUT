@@ -844,6 +844,7 @@ classdef Sources2D < handle
             if isfield(obj.P,'sn_neuron')&&(~isempty(obj.P.sn_neuron))
                 try obj.P.sn_neuron(ind)=[]; catch; end
             end
+            try obj.P.decay_rate(ind)=[]; catch; end
             try  obj.ids(ind) = [];   catch;   end
             try obj.tags(ind) =[]; catch; end
             try obj.SNR(ind)=[]; catch; end

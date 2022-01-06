@@ -156,21 +156,24 @@ end
 
 % greedy method for initialization
 tic;
-add_noise=true;
+add_noise=.001;
 if isequal(data_type,'2p')
    add_noise=.00001;
 end
 neuron.options.add_noise=add_noise;
-Cn=correlation_image(Y,[],d1s,d2s,[],[],add_noise);
+%Cn=correlation_image(Y,[],d1s,d2s,[],[],add_noise);
+if isequal(data_type,'1p')
+if exist('neuron_centers','var')
 
-% if exist('neuron_centers','var')
-% 
-%     [center, Cn, pnr] = neuron.initComponents_endoscope(Y, K, patch_par, debug_on, save_avi,neuron_centers);
-% else
-%     [center,Cn,pnr]=neuron.initComponents_endoscope(Y, K, patch_par, debug_on, save_avi);
-%            
-%          
-% end
+    [center, Cn, pnr] = neuron.initComponents_endoscope(Y, K, patch_par, debug_on, save_avi,neuron_centers);
+else
+    [center,Cn,pnr]=neuron.initComponents_endoscope(Y, K, patch_par, debug_on, save_avi);
+           
+         
+end
+else
+    Cn=correlation_image(Y,[],d1s,d2s,[],[],add_noise);
+end
 Cn=imresize(Cn,[d1,d2]);
 %Cn=imgaussfilt(Cn);
 end

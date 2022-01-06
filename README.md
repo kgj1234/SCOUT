@@ -12,6 +12,10 @@ Extraction - Built on CNMF-E for 1-photon recordings, and CNMF for 2-photon reco
 
 Cell Tracking - SCOUT uses an ensemble of predictors to assign identification probabilities for neurons between sessions, followed by a corrector which forces each neuron to appear in exactly one column of the cell register (the matrix of cell identifications across sessions). This method has outperformed cellReg on simulated and in vivo data.
 
+
+https://user-images.githubusercontent.com/24851530/145508599-85887afd-4213-4470-b5ae-7d35c3118f16.mov
+
+
 SCOUT also includes motion correction using NoRMCorre, and a framework for global session registration prior to extraction (see demos)
 ## Demos
 SCOUT currently contains six demos, demonstrating each module, as well as the full pipeline (see SCOUT/Demos). 

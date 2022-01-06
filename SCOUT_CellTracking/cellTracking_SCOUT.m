@@ -67,7 +67,7 @@ function [neuron,cell_register,neurons,links]=cellTracking_SCOUT(neurons,varargi
 optional_parameters={'links','weights','max_dist','overlap','chain_prob','corr_thresh','register_sessions','registration_type','registration_method',...
     'registration_template','use_corr','use_spat','max_gap','probability_assignment_method','base','min_prob','binary_corr','max_sess_dist',...
     'footprint_threshold','cell_tracking_options','single_corr','scale_factor','reconstitute','construct_combined'};
-defaults={{},[4,5,5,0,0,0],[45],[],[.5],.7,true,'align_to_base',{'affine','non-rigid'},'spatial',false,true,0,'default',ceil(length(neurons)/2),[.5],false,inf,.1,struct,false,1.5,true,true};
+defaults={{},[4,5,5,0,0,0],[45],[],[.5],.6,true,'align_to_base',{'affine','non-rigid'},'spatial',false,true,0,'default',ceil(length(neurons)/2),[.5],false,inf,.1,struct,false,1.5,true,true};
 
 p=inputParser;
 
@@ -192,6 +192,18 @@ if register_sessions
         base=randi([1,length(neurons)],1,1);
    end
 end
+num_rows=ceil(length(neurons)/5);
+figure('Name','Session Alignment')
+
+for k=1:length(neurons)
+    subplot(num_rows,min(5,length(neurons)),k);
+    imagesc(max(reshape(neurons{k}.A./max(neurons{k}.A,[],1),neurons{k}.imageSize(1),neurons{k}.imageSize(2),[]),[],3))
+    daspect([1,1,1])
+    xticks([])
+    yticks([])
+    title(['Session',num2str(k)])
+end
+
 for i=1:length(neurons)
     neurons{i}.updateCentroid();
 end
@@ -235,9 +247,17 @@ for i=1:length(neurons)-1
     if ~isempty(links)
         distance_links{2*i-1}=pdist2(neurons{i}.centroid,links{i}.centroid);
         distance_links{2*i}=pdist2(links{i}.centroid,neurons{i+1}.centroid);
+        temp=bsxfun(@times, neurons{i}.A, 1./sqrt(sum(neurons{i}.A.^2)));
+        temp1=bsxfun(@times,links{i}.A,1./sqrt(sum(links{i}.A.^2)));
+        temp2=bsxfun(@times,neurons{i+1}.A,1./sqrt(sum(neurons{i+1}.A.^2)));
+        overlap_links{2*i-1}=temp'*temp1;
+        overlap_links{2*i}=temp1'*temp2;
+        
     else
         distance_links{2*i-1}=[];
         distance_links{2*i}=[];
+        overlap_links{2*i-1}=[];
+        overlap_links{2*i}=[];
     end
 end
 
@@ -249,9 +269,16 @@ else
 end
 if max_weights(5)>0
 for i=1:length(neurons)
+    neurons{i}.SNR=log(neurons{i}.SNR);
+    %neurons{i}.SNR(isoutlier(neurons{i}.SNR))=max(neurons{i}.SNR(setdiff(1:size(neurons{i}.C,1),find(isoutlier(neurons{i}.SNR)))));
+    neurons{i}.SNR=(neurons{i}.SNR-mean(neurons{i}.SNR))/std(neurons{i}.SNR);
+end
+for i=1:length(neurons)
     for j=i:length(neurons)
         %SNR_dist{i,j}=pdist2(neurons{i}.SNR,neurons{j}.SNR)./((repmat(neurons{i}.SNR,1,size(neurons{j}.SNR,1))+repmat(neurons{j}.SNR',size(neurons{i}.SNR,1),1))/2);
-        SNR_dist{i,j}=pdist2(log(neurons{i}.SNR),log(neurons{j}.SNR));
+        
+             
+        SNR_dist{i,j}=pdist2(neurons{i}.SNR,neurons{j}.SNR);
     end
 end
 else
@@ -271,22 +298,26 @@ end
 end
     
 if max_weights(6)>0 
+
 for i=1:length(neurons)
-    decay_rate{i}=zeros(size(neurons{i}.P.kernel_pars,1),1);
-    for k=1:length(decay_rate{i})
-        temp=ar2exp(neurons{i}.P.kernel_pars(k));
-        decay_rate{i}(k)=temp(1);
-        
+    if isempty(neurons{i}.P.kernel_pars)||size(neurons{i}.C,1)~=length(neurons{i}.P.kernel_pars)
+        for l=1:length(neurons)
+            neurons{l}=estimate_decay_full(neurons{l});
+        end
+        break
     end
-    decay_rate{i}(end+1:size(neurons{i}.C,1))=mean(decay_rate{i});
-    neurons{i}.P.kernel_pars(end+1:size(neurons{i}.C,1))=mean(neurons{i}.P.kernel_pars);
-    %neurons{i}.P.kernel_pars=decay_rate{i};
-end
+end     
 for i=1:length(neurons)
-    for j=i:length(neurons)
-        
-            
-        decay_dist{i,j}=pdist2(neurons{i}.P.kernel_pars,neurons{j}.P.kernel_pars)./((repmat(neurons{i}.P.kernel_pars,1,size(neurons{j}.P.kernel_pars,1))+repmat(neurons{j}.P.kernel_pars',size(neurons{i}.P.kernel_pars,1),1))/2);
+%     for j=1:length(neurons)
+%    for j=i:length(neurons)
+%         for k=1:size(neurons{i}.C,1)
+%             for l=1:size(neurons{j}.C,1)
+%                 decay_dist{i,j}(k,l)=abs(neurons{i}.P.kernel_pars(k)-neurons{j}.P.kernel_pars(l))/(neurons{i}.P.kernel_pars(k)+neurons{j}.P.kernel_pars(l));
+%             end
+%         end
+%    end
+    for j=1:length(neurons)
+        decay_dist{i,j}=pdist2(neurons{i}.P.kernel_pars,neurons{j}.P.kernel_pars);
         %decay_dist{i,j}=pdist2(decay_rate{i},decay_rate{j});
     end
 end
@@ -332,7 +363,7 @@ end
 %            for nn=1:length(chain_prob)
 param_vec=[size(weights,1),length(max_dist),length(min_prob),length(chain_prob)];
 
-%Why is this necessary?
+
 max_dist=max_dist;
 min_prob=min_prob;
 chain_prob=chain_prob;
@@ -348,8 +379,17 @@ scale_factor=scale_factor;
 reconstitute=reconstitute;
 construct_combined=construct_combined;
 
-%Change this to parfor for parallel execution using multiple parameters
-for oo=1:prod(param_vec)
+%Automatically detects whether one or more parameter value sets is used and
+%applies parallel processing accordingly. 
+poolobj=gcp;
+if prod(param_vec)==1
+    M=0;
+else
+    M=poolobj.NumWorkers;
+end
+
+parfor (oo=1:prod(param_vec),M)
+%for oo=1:prod(param_vec)
    % for oo=47
 [jj,kk,mm,nn]=ind2sub(param_vec,oo);
  
@@ -369,16 +409,16 @@ min_num_neighbors=1.5;
 %disp(['Initialization: ', num2str(time), ' seconds'])
 %% Construct Cell Register
 %tic
-try
-[cell_register,aligned_probabilities,reg_prob]=compute_cell_register_cluster(correlation_matrices,distance_links,distance_metrics,...
+%try
+[cell_register,aligned_probabilities,reg_prob]=compute_cell_register_cluster(correlation_matrices,distance_links,overlap_links,distance_metrics,...
     similarity_pref,curr_weights,probability_assignment_method,curr_max_dist,max_gap,curr_min_prob,single_corr,corr_thresh,use_spat,min_num_neighbors,...
     curr_chain_prob,binary_corr,max_sess_dist,centroids,scale_factor,reconstitute,similarity_id);
-catch
-    cell_register=[];
-    aligned_probabilities=[];
-    reg_prob=[];
-    warning('Cell Tracking Failed')
-end
+%  catch
+%      cell_register=[];
+%      aligned_probabilities=[];
+%      reg_prob=[];
+%      warning('Cell Tracking Failed')
+%  end
 %time=toc;
 %disp(['Tracking: ', num2str(time), ' seconds'])
 
@@ -414,7 +454,9 @@ end
 if isempty(cell_register)||~construct_combined
     neuron=Sources2D;
 else 
-
+if ~isempty(cell_register)
+    cell_register=uint32(cell_register);
+end
 neuron=Sources2D;
 
 total = 0;
@@ -497,13 +539,26 @@ try
 end
 
 end
-final_register{oo}=cell_register;
+final_register{oo}=uint32(cell_register);
 final_neuron{oo}=neuron;
 end
         
 if length(final_neuron)==1
     neuron=final_neuron{1};
     cell_register=final_register{1};
+    ind=find(sum(cell_register==0,2)==0);
+    figure('Name','Identified in All Sessions')
+
+    for k=1:length(neurons)
+        subplot(num_rows,min(5,length(neurons)),k);
+        imagesc(max(reshape(neurons{k}.A(:,cell_register(ind,k))./max(neurons{k}.A(:,cell_register(ind,k)),[],1),neurons{k}.imageSize(1),neurons{k}.imageSize(2),[]),[],3))
+        daspect([1,1,1])
+        xticks([])
+        yticks([])
+        title(['Session',num2str(k)])
+    end
+
+
 else
     cell_register=final_register;
     neuron=final_neuron;

@@ -120,15 +120,15 @@ for j=1:max(idx)
     dup=~(length(session_ids(idx==j))==length(unique(session_ids(idx==j))));
     temp_one=sum(X(idx==j,idx==j)<=0,'all');
     temp_one_score=temp_one/((sum(idx==j))^2-(sum(idx==j)));
-    'h';
+    
 end  
 
-[idx,start,k]=avg_cluster_temp(1-X,k,idx,start,25,.002,session_ids,chain_prob);
+[idx,start,k]=avg_cluster_temp(1-X,k,idx,start,10*length(unique(session_ids)),.002,session_ids,chain_prob);
 for j=1:max(idx)
     dup=~(length(session_ids(idx==j))==length(unique(session_ids(idx==j))));
     temp_one=sum(X(idx==j,idx==j)<=0,'all');
     temp_one_score=temp_one/((sum(idx==j))^2-(sum(idx==j)));
-    'h';
+    
 end                 
 
 end    

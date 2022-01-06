@@ -3,7 +3,7 @@
 
 load('neurons')
 load('links')
-%SCOUT obtains F1 score of 0.91, compared with 0.55 with CaImAn
+%SCOUT obtains F1 score of 0.88, compared with 0.55 with CaImAn
 
 %cell tracking options (fully defined in cellTracking_SCOUT)
 cell_tracking_options.chain_prob=.65; %(Chain probability threshold)

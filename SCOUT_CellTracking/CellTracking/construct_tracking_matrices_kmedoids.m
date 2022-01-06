@@ -5,6 +5,6 @@ function [aligned_neurons,aligned_probabilities,reg_prob]=construct_tracking_mat
 disp('Tracking Using Spatial Criterion')
 
 [aligned_neurons,reg_prob,aligned_probabilities]=construct_aligned_neuron_graph_kmedoids(aligned,...
-            probabilities,size_vec,chain_prob,prob,dist_vals,min_prob);
+            probabilities,size_vec,chain_prob,prob,dist_vals,min_prob,max_gap);
 
 %aligned_probabilities=construct_combined_probabilities_adj(aligned_neurons,probabilities,aligned,dist_vals,min_prob,[],[],max_sess_dist);

@@ -1,5 +1,5 @@
 function [pair_aligned,correlation,distance_vals,corr_prob,distance_prob,max_pixel_distance]=...
-    compute_aligned_pairwise_probability_single_full(correlation_matrices,distance_links,dist_self,...
+    compute_aligned_pairwise_probability_single_full(correlation_matrices,distance_links,overlap_links,dist_self,...
     distance_metrics,similarity_pref,max_dist,use_corr,single_corr,method,corr_thresh,min_num_neighbors_factor,min_prob,similarity_id)
 
 
@@ -173,7 +173,10 @@ for i=1:length(distance_metrics)
         X(X==1)=[];
     end
     use_temp=false;
-    X(isoutlier(X))=[];
+    outliers=isoutlier(X);
+    if ~isempty(X) & sum(abs(X(~outliers)-X(1))<10^(-5))~=sum(outliers==0)
+        X(isoutlier(X))=[];
+    end
 %     if isequal(similarity_id{i},'decay')||isequal(similarity_id{i},'SNR')
 %         %temp_method='gemm';
 %         %use_temp=true;
@@ -243,6 +246,8 @@ for j=1:size(dist_self,1)
         end
     end
 end
+
+
 end
 
 
@@ -251,6 +256,7 @@ end
 if use_corr
     
     X=NN_corr2;
+    X(X==0)=[];
     X(isoutlier(X))=[];
     %method='gmm';
     
@@ -258,6 +264,7 @@ if use_corr
     
     if ~single_corr
         X=NN_corr1;
+        X(X==0)=[];
         X(isoutlier(X))=[];
         f_corr1=construct_probability_function_main(X,method,'right');
     end

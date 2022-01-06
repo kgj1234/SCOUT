@@ -13,6 +13,9 @@ function neuron=thresholdNeuron(neuron,prctile_thresh)
 %%
 A=mat2cell(full(neuron.A),size(neuron.A,1),ones(1,size(neuron.A,2)));
 data_shape=neuron.imageSize;
+if isempty(data_shape)
+    data_shape=[neuron.options.d1,neuron.options.d2];
+end
 n=size(neuron.A,2);
 parfor i=1:n
     A1=A{i};

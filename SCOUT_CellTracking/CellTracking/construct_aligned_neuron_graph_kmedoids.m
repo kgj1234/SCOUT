@@ -1,21 +1,33 @@
 function [cell_register,reg_prob,aligned_probabilities]=construct_aligned_neuron_graph_kmedoids(aligned,...
-    probabilities,size_vec,chain_prob,prob,distance_vals,min_prob)
+    probabilities,size_vec,chain_prob,prob,distance_vals,min_prob,max_gap)
 
 [similarity_matrix,ids]=construct_similarity_matrix(aligned,probabilities,size_vec);
 subsid_sim_matrices{1}=similarity_matrix;
-for j=2:30
+parfor j=2:30
     subsid_sim_matrices{j}=construct_subsid_similarity_matrices(aligned,prob,size_vec,distance_vals);
 end
 
 [S,C]=graphconncomp(similarity_matrix);
 cell_register=cell(1,S);
 reg_prob=cell(1,S);
-
+C1={};
+for k=1:S
+    C1{k}=find(C==k);
+end
+for k=S:-1:1
+    if length(C1{k})>(10)*size(aligned,2)
+        warning('Significant Overlaps Detected, Accuracy may be reduced');
+        C1=split_batches(C1,similarity_matrix(C1{k},C1{k}),k,size(aligned,2));
+    end
+end
+C=C1;
+S=length(C1);
 parfor k=1:S
+    try
     idx=cell(1,30);
     num_clust=zeros(1,10);
     used_ind=cell(1,5);
-    nodes=find(C==k);
+    nodes=C{k};
     node_sessions=find_node_sessions(nodes,size_vec);
     if length(nodes)==1
         reg_prob{k}=1;
@@ -38,7 +50,7 @@ parfor k=1:S
     %idx=greedy_consensus(consensus_matrix,curr_mat,chain_prob);
     idx=kmedoids_cluster_constrained(consensus_matrix,ceil(mean(num_clust)),min(chain_prob,.75),size(probabilities,2),node_sessions);
     cell_register{k}=extract_cell_register(idx,nodes,node_sessions,size_vec);
-    
+     
     for j=1:max(idx)
         curr_mat=full_mat(idx==j,idx==j);
         curr_mat(logical(eye(size(curr_mat))))=[];
@@ -47,6 +59,13 @@ parfor k=1:S
             reg_prob{k}(j,1)=1;
         end
     end
+    end
+    ind=find(sum(cell_register{k}==0,2)>max_gap);
+    cell_register{k}(ind,:)=[];
+    reg_prob{k}(ind,:)=[];
+    
+    catch
+        warning('Clustering failed for one component, typically occurs if all component members in same session')
     end
 end
 

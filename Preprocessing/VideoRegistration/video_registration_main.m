@@ -61,16 +61,23 @@ disp(vid_paths)
 
 %Load video files
 for i=1:length(vid_paths)
-    [~,~,ext]=fileparts(vid_paths{i});
+    [path,name,ext]=fileparts(vid_paths{i});
     if isequal(ext,'.mat')
         Y=struct2cell(load(vid_paths{i}));
         vids{i}=Y{1};
-    else
+    elseif isequal(ext,'.avi')
         v=VideoReader(vid_paths{i});
         vids{i}=v.read();
+    else
+        error('Video filetype not supported')
     end
     if length(size(vids{i}))==4
           vids{i}=squeeze(max(vids{i},[],3));
+          Y=vids{i};
+          Ysiz=size(Y);
+          save(fullfile(path,[name,'.mat']),'Y','Ysiz','-v7.3')
+          vid_paths{i}=fullfile(path,[name,'.mat']);
+          
     end
 end
 
@@ -119,7 +126,7 @@ if length(projections)==0
         end
     else
         
-        projections=construct_correlation_template_main(data_type);
+        projections=construct_correlation_template_main(data_type,vid_paths);
     end
 end
 

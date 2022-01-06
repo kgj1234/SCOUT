@@ -1,4 +1,4 @@
-function [aligned_neurons,aligned_probabilities,reg_prob]=compute_cell_register_cluster(correlation_matrices,distance_links,...
+function [aligned_neurons,aligned_probabilities,reg_prob]=compute_cell_register_cluster(correlation_matrices,distance_links,overlap_links,...
     distance_metrics,similarity_pref,weights,method,max_dist,max_miss,min_prob,single_corr,corr_thresh,use_spatial,min_num_neighbors,...
 chain_prob,binary_corr,max_sess_dist,centroids,scale_factor,reconstitute,similarity_id)
 
@@ -73,13 +73,19 @@ disp('Constructing Pairwise Distances Between Consecutive Sessions For All Metri
 % max_pixel_dist=zeros(size(aligned));
 aligned=cell(length(size_vec)-1,length(size_vec));
 
-for i=1:size(distance_metrics,1)
-  [aligned{i,i+1},correlation{i},temp_dist{i},corr_prob{i},distance_prob{i},max_pixel_dist(i,i+1)]=compute_aligned_pairwise_probability_single_full(...
-        correlation_matrices(2*i-1:2*i),distance_links(2*i-1:2*i),distance_metrics{i,i}{1},distance_metrics{i,i+1},...
+parfor i=1:size(distance_metrics,1)
+  [aligned1{i},correlation{i},temp_dist{i},corr_prob{i},distance_prob{i},max_pixel_dist1(i)]=compute_aligned_pairwise_probability_single_full(...
+        correlation_matrices(2*i-1:2*i),distance_links(2*i-1:2*i),overlap_links(2*i-1:2*i),distance_metrics{i,i}{1},distance_metrics{i,i+1},...
         similarity_pref,max_dist,use_corr,single_corr,method,corr_thresh,min_num_neighbors,min_prob,similarity_id);
    
 end
-
+%This can be replaced with a reshape function to save memory.
+for i=1:size(distance_metrics,1)
+    aligned{i,i+1}=aligned1{i};
+    max_pixel_dist(i,i+1)=max_pixel_dist1(i);
+end
+clear aligned1;
+clear max_pixel_dist1;
 
 
 disp('Constructing Initial Tracking Matrices')
@@ -90,7 +96,7 @@ for i=1:size(distance_metrics,1)
     
  
     distance_vals{i,i+1}=temp_dist{i};
-    corr_prob{i}(corr_prob{i}<.6)=0;
+    corr_prob{i}(mean(correlation{i},2)<=corr_thresh&~isnan(corr_prob{i}))=0;
     %corr_prob{i}(isnan(corr_prob{i}))=0;
     if binary_corr
         corr_prob{i}(mean(correlation{i},2)<=corr_thresh)=0;
@@ -184,7 +190,7 @@ disp('Construct Spatial Distances Between All Available Sessions')
 
 weights(2:end)=weights(2:end)/sum(weights(2:end)); 
 weights(1)=0;
-for p=1:size(distance_metrics,1)*size(distance_metrics,2);
+parfor p=1:size(distance_metrics,1)*size(distance_metrics,2);
     [i,j]=ind2sub([size(distance_metrics,1),size(distance_metrics,2)],p);
     if j>i+1 & j<=i+max_sess_dist
 % for i=1:size(distance_metrics,1)
@@ -200,7 +206,7 @@ for p=1:size(distance_metrics,1)*size(distance_metrics,2);
 %                 [],[],distance_metrics{i,i}{1},distance_metrics{i,j},...
 %                 similarity_pref,max_dist,false,single_corr,method,corr_thresh,min_num_neighbors);
             [aligned{p},~,distance_vals{p},~,distance_prob,max_pixel_dist]=compute_aligned_pairwise_probability_single_full(...
-        [],[],distance_metrics{i,i}{1},distance_metrics{i,j},...
+        [],[],[],distance_metrics{i,i}{1},distance_metrics{i,j},...
         similarity_pref,max_dist,false,single_corr,method,corr_thresh,min_num_neighbors,min_prob,similarity_id);
 
       for l=1:length(distance_prob)
@@ -310,12 +316,17 @@ for l=1:size(max_pixel_dist,2)
 end
 [aligned_neurons,aligned_probabilities,reg_prob]=construct_tracking_matrices_kmedoids(aligned,probabilities,...
     min_prob,chain_prob,distance_vals,max_sess_dist,size_vec,method,penalty,max_miss,max_pixel_dist,distance_metrics,centroids,reconstitute,prob);
+disp('Removing Possible Repeats')
+[aligned_neurons,aligned_probabilities]=...
+    Eliminate_Repeats_No_Fill(aligned_neurons,reg_prob);
 
-end
 
-if use_spatial
-    [aligned_neurons,aligned_probabilities,reg_prob]=construct_tracking_matrices_kmedoids(aligned,probabilities,...
+elseif use_spatial
+[aligned_neurons,aligned_probabilities,reg_prob]=construct_tracking_matrices_kmedoids(aligned,probabilities,...
     min_prob,chain_prob,distance_vals,max_sess_dist,size_vec,method,penalty,max_miss,max_pixel_dist,distance_metrics,centroids,reconstitute,prob);
+[aligned_neurons,aligned_probabilities]=...
+    Eliminate_Repeats_No_Fill(aligned_neurons,reg_prob);
+
 end
 
  
@@ -351,7 +362,9 @@ end
 %Delete neurons that span insufficient recording sessions
 aligned_probabilities=round(aligned_probabilities,4);
 aligned_probabilities(aligned_probabilities>1)=1;
-rem_ind=sum(iszero(aligned_neurons),2)>max_miss;
+rem_ind=find(sum(iszero(aligned_neurons),2)>max_miss);
+rem_ind1=find(sum(aligned_neurons,2)==0);
+rem_ind=[rem_ind;rem_ind1];
 aligned_neurons(rem_ind,:)=[];
 aligned_probabilities(rem_ind,:)=[];
 try
@@ -359,5 +372,6 @@ reg_prob(rem_ind,:)=[];
 catch
     reg_prob=[];
 end
+
 
 end
